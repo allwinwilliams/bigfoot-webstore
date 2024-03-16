@@ -1,6 +1,7 @@
 import {Suspense} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useLoaderData} from '@remix-run/react';
+import TshirtCanvas from '../components/TshirtCanvas';
 
 import {
   Image,
@@ -107,24 +108,13 @@ export default function Product() {
   const {product, variants} = useLoaderData();
   const {selectedVariant} = product;
   console.log(selectedVariant);
-  if (selectedVariant.media === 'Model3d') {
-    console.log("3d model");
-    return (
-      <div className="product">
-        <div className="3d-canvas"></div>
-        <ProductImage image={selectedVariant?.image} />
-        <ProductMain
-          selectedVariant={selectedVariant}
-          product={product}
-          variants={variants}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="product">
-      <ProductImage image={selectedVariant?.image} />
+      <ProductImage 
+        image={selectedVariant?.image}
+        variant={selectedVariant}
+        handle={product.handle} />
       <ProductMain
         selectedVariant={selectedVariant}
         product={product}
@@ -137,10 +127,23 @@ export default function Product() {
 /**
  * @param {{image: ProductVariantFragment['image']}}
  */
-function ProductImage({image}) {
+function ProductImage({image, variant, handle}) {
+  if (handle === 'data-art-oversized-tshirt') {
+    console.log("Variant:");
+    console.log(variant);
+    return (
+      <div className="threejs-canvas">
+        <TshirtCanvas 
+          color={variant.selectedOptions[0].value}
+        />
+      </div>
+    );
+  }
+
   if (!image) {
     return <div className="product-image" />;
   }
+  
   return (
     <div className="product-image">
       <Image
