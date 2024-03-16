@@ -12,11 +12,11 @@ export function Header({header, isLoggedIn, cart}) {
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
         <strong>{shop.name}</strong>
       </NavLink>
-      <HeaderMenu
+      {/* <HeaderMenu
         menu={menu}
         viewport="desktop"
         primaryDomainUrl={header.shop.primaryDomain.url}
-      />
+      /> */}
       <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
     </header>
   );
@@ -95,7 +95,7 @@ function HeaderCtas({isLoggedIn, cart}) {
           </Await>
         </Suspense>
       </NavLink>
-      <SearchToggle />
+      {/* <SearchToggle /> */}
       <CartToggle cart={cart} />
     </nav>
   );

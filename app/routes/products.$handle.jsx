@@ -106,6 +106,22 @@ export default function Product() {
   /** @type {LoaderReturnData} */
   const {product, variants} = useLoaderData();
   const {selectedVariant} = product;
+  console.log(selectedVariant);
+  if (selectedVariant.media === 'Model3d') {
+    console.log("3d model");
+    return (
+      <div className="product">
+        <div className="3d-canvas"></div>
+        <ProductImage image={selectedVariant?.image} />
+        <ProductMain
+          selectedVariant={selectedVariant}
+          product={product}
+          variants={variants}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="product">
       <ProductImage image={selectedVariant?.image} />
