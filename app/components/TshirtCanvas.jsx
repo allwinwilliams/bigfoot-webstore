@@ -31,9 +31,8 @@ function createCanvasTexture(color) {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	
 	ctx.font = '24px Arial';
-	ctx.fillStyle = 'black';
+	ctx.fillStyle = 'white';
 
-	
 	// Convert canvas to texture
 	return new THREE.CanvasTexture(canvas);
   }

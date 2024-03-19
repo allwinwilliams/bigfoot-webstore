@@ -37,7 +37,10 @@ export default async function handleRequest(
   }
 
   responseHeaders.set('Content-Type', 'text/html');
-  responseHeaders.set('Content-Security-Policy', header);
+  console.log("header....");
+  let csvheader = header + " https://api.stability.ai";
+  console.log(csvheader);
+  responseHeaders.set('Content-Security-Policy', csvheader);
 
   return new Response(body, {
     headers: responseHeaders,

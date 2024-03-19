@@ -2,6 +2,7 @@ import {Suspense} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useLoaderData} from '@remix-run/react';
 import TshirtCanvas from '../components/TshirtCanvas';
+import AIShirtCanvas from '../components/AIShirtCanvas';
 
 import {
   Image,
@@ -128,13 +129,22 @@ export default function Product() {
  * @param {{image: ProductVariantFragment['image']}}
  */
 function ProductImage({image, variant, handle}) {
+
   if (handle === 'data-art-oversized-tshirt') {
-    console.log("Variant:");
-    console.log(variant);
     return (
       <div className="threejs-canvas">
         <TshirtCanvas 
           color={variant.selectedOptions[0].value}
+        />
+      </div>
+    );
+  }
+
+  if (handle === 'short-sleeve-ai-generated-unisex-shirt') {
+    return (
+      <div className="threejs-canvas">
+        <AIShirtCanvas 
+          prompt="Dancing cat"
         />
       </div>
     );
