@@ -1,12 +1,12 @@
 // import fs from "fs";
 
 export const getImage = async (prompt) => {
-    const path =
-      "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image";
+    const path = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image";
   
     const headers = {
-      Accept: "application/json",
-      Authorization: "Bearer sk-8ssAMA4Sp8aRZC7czSRhUFOcWz0NwpefLiffJQvPRJ0889y5"
+      "Content-Type": "application/json",
+      "Accept": "*/*",
+      "Authorization": "Bearer sk-8ssAMA4Sp8aRZC7czSRhUFOcWz0NwpefLiffJQvPRJ0889y5"
     };
   
     let body = {
@@ -24,14 +24,14 @@ export const getImage = async (prompt) => {
         {
           "text": "blurry, bad",
           "weight": -1
-        }
+        },
       ],
     };
   
-    const response = fetch(
+    let response = fetch(
       path,
       {
-        headers,
+        headers: new Headers(headers),
         method: "POST",
         body: JSON.stringify(body),
       }
@@ -39,12 +39,16 @@ export const getImage = async (prompt) => {
     
     console.log(JSON.stringify(body));
     
+    let responseJSON = "Waiting for response";
+    responseJSON = await response;
+    console.log(responseJSON);
+
     if (!response.ok) {
+      console.log("ERROR");
       throw new Error(`Non-200 response: ${await response.text()}`)
     }
     
-    let responseJSON = await response.json();
-    console.log(responseJSON);
+  
     responseJSON.artifacts.forEach((image, index) => {
       console.log(image);
       // fs.writeFileSync(
