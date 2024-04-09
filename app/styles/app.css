@@ -379,6 +379,13 @@ aside li {
   width: 100%;
 }
 
+.product-form .add-to-cart{
+  width: 100%;
+  color: #fff;
+  background-color: #000;
+  padding: 10px;
+}
+
 /*
 * --------------------------------------------------
 * routes/products.$handle.tsx
@@ -465,4 +472,8 @@ aside li {
 
 .account-logout {
   display: inline-block;
+}
+
+.threejs-canvas canvas{
+  width: 100% !important;
 }

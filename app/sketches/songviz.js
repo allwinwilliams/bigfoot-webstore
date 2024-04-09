@@ -1,18 +1,11 @@
-let time = 0;
-
 function setup() {
-  p5Canvas = createCanvas(128, 128, WEBGL);
-  p5Canvas = p5Canvas.canvas;
-  // frameRate(1);
-  translate(0,0);
+  createCanvas(400, 600, WEBGL);
+  noStroke();
 }
 
 function draw() {
-  background(220);
-  fill("red");
-  circle(mouseX-50, mouseY-50, 100);
-  fill("green");
-  circle(-mouseY, -mouseX, abs(mouseX));
-
-  // material.map = new THREE.CanvasTexture( p5Canvas.canvas );
+  background(0);
+  fill("red")
+  rect(0,0,width, height);
+  rect(-100,-200,10, 20);
 }

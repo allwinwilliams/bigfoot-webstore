@@ -61,7 +61,7 @@ export function Tshirt({color}) {
       }
     };
   }, [color, gltf]);
-
+  
     useFrame((state, delta) => (gltf.scene.rotation.y += delta * 0.2))
 	return (
 		<primitive

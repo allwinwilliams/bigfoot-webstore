@@ -183,16 +183,6 @@ function ProductMain({selectedVariant, product, variants}) {
     <div className="product-main">
       <h1>{title}</h1>
       <ProductPrice selectedVariant={selectedVariant} />
-      <CustomiseButton product={product} />
-      <button
-        className="product-cusomisation-link"
-        key={product.id}
-        onClick={() => {
-          history.push(`/customise/${product.handle}`)
-        }}
-      >
-        Customise
-      </button>
       <br />
       <Suspense
         fallback={
@@ -271,9 +261,7 @@ function ProductForm({product, selectedVariant, variants}) {
       >
         {({option}) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
-      
       <br />
-      
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
@@ -290,7 +278,7 @@ function ProductForm({product, selectedVariant, variants}) {
             : []
         }
       >
-        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+        {selectedVariant?.availableForSale ? 'Create Variant' : 'Sold out'}
       </AddToCartButton>
     </div>
   );
@@ -328,18 +316,15 @@ function ProductOptions({option}) {
   );
 }
 
-
 /**
  * @param {{
-*   analytics?: unknown;
-*   children: React.ReactNode;
-*   disabled?: boolean;
-*   lines: CartLineInput[];
-*   onClick?: () => void;
-* }}
-*/
-
-
+ *   analytics?: unknown;
+ *   children: React.ReactNode;
+ *   disabled?: boolean;
+ *   lines: CartLineInput[];
+ *   onClick?: () => void;
+ * }}
+ */
 function AddToCartButton({analytics, children, disabled, lines, onClick}) {
   return (
     <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
@@ -362,23 +347,6 @@ function AddToCartButton({analytics, children, disabled, lines, onClick}) {
       )}
     </CartForm>
   );
-}
-
-
-/**
- * @param {{product: product}}
- */
-function CustomiseButton({product}){
-  console.log("link to", `/customise/${product.handle}`);
-  return(
-    <Link
-      className="product-cusomisation-link"
-      key={product.id}
-      to={`/customise/${product.handle}`}
-    >
-      Customise
-    </Link>
-  )
 }
 
 const PRODUCT_VARIANT_FRAGMENT = `#graphql

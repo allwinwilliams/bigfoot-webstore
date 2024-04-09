@@ -1,5 +1,7 @@
 // import fs from "fs";
 
+import { useEffect, useState } from "react";
+
 export const getImage = async (prompt) => {
     const path = "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image";
   
@@ -48,7 +50,6 @@ export const getImage = async (prompt) => {
       throw new Error(`Non-200 response: ${await response.text()}`)
     }
     
-  
     responseJSON.artifacts.forEach((image, index) => {
       console.log(image);
       // fs.writeFileSync(
@@ -60,7 +61,13 @@ export const getImage = async (prompt) => {
 
   export default function AIShirtCanvas({prompt}){
     console.log("Prompt received: " + prompt);
-    getImage(prompt);
+    // getImage(prompt);
+    const [loaded, setLoaded] = useState(false);
+    useEffect(
+      getImage(prompt).then(() => {
+        setLoaded(true)
+      })
+    );
     return (
         <div className="ai-canvas-container">
             <img src = "https://allwinwilliams.com/assets/icon.png" />
