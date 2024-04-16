@@ -1,9 +1,9 @@
 import {Suspense} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
-import {Await, Link, useLoaderData} from '@remix-run/react';
+import {Await, Link, useSearchParams, useLoaderData} from '@remix-run/react';
 import TshirtCanvas from '../components/TshirtCanvas';
 import AIShirtCanvas from '../components/AIShirtCanvas';
-
+import P5Canvas from '../components/P5Canvas';
 import {
   Image,
   Money,
@@ -25,10 +25,10 @@ export const meta = ({data}) => {
  * @param {LoaderFunctionArgs}
  */
 export async function loader({params, request, context}) {
-  console.log('in product/$handle loader');
+  
   const {handle} = params;
   const {storefront} = context;
-
+  
   const selectedOptions = getSelectedProductOptions(request).filter(
     (option) =>
       // Filter out Shopify predictive search query params
@@ -110,7 +110,6 @@ export default function Product() {
   /** @type {LoaderReturnData} */
   const {product, variants} = useLoaderData();
   const {selectedVariant} = product;
-  console.log(selectedVariant);
 
   return (
     <div className="product">
@@ -131,14 +130,23 @@ export default function Product() {
  * @param {{image: ProductVariantFragment['image']}}
  */
 function ProductImage({image, variant, handle}) {
-
+  console.log("AI TSHIRT LOADING");
+  const [searchParams] = useSearchParams();
+  const songId = searchParams.get('Song');
+  
+  console.log("SongID", searchParams.get('Song'));
   if (handle === 'data-art-oversized-tshirt') {
     return (
-      <div className="threejs-canvas">
-        <TshirtCanvas 
-          color={variant.selectedOptions[0].value}
-        />
+      <div>
+        <P5Canvas song={songId} />
+        <div className="threejs-canvas">
+          <TshirtCanvas 
+            color={variant.selectedOptions[0].value}
+            song={songId}
+          />
+        </div>
       </div>
+     
     );
   }
 
@@ -262,9 +270,9 @@ function ProductPrice({selectedVariant}) {
  * }}
  */
 function ProductForm({product, selectedVariant, variants}) {
-  console.log("product", product)
-  console.log("variants", variants)
-  console.log("selected variant", selectedVariant)
+  // console.log("product", product)
+  // console.log("variants", variants)
+  // console.log("selected variant", selectedVariant)
   return (
     <div className="product-form">
       <VariantSelector
@@ -358,7 +366,7 @@ function AddToCartButton({analytics, children, disabled, lines, onClick}) {
           <button
             type="submit"
             onClick={onClick}
-            class="add-to-cart"
+            className="add-to-cart"
             disabled={disabled ?? fetcher.state !== 'idle'}
           >
             {children}

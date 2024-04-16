@@ -1,4 +1,4 @@
-import {Suspense} from 'react';
+import {Suspense, useState} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useLoaderData} from '@remix-run/react';
 import TshirtCanvas from '../components/TshirtCanvas';
@@ -14,39 +14,6 @@ import {
 
 import {getVariantUrl} from '~/lib/variants';
 
-class State{
-  constructor(){
-    this.value = "Color";
-  }
-
-  nextState(){
-    if(this.value == "Spotify"){
-      this.value = "Color";
-    }
-    if(this.value == "Color"){
-      this.value = "Size";
-    }
-    if(this.value == "Size"){
-      this.value = "Color";
-    }
-    console.log("next state", this.value);
-  }
-
-  previousState(){
-    if(this.value == "Spotify"){
-      this.value = "Size"
-    }
-    if(this.value == "Size"){
-      this.value = "Color"
-    }
-    if(this.value == "Size"){
-      this.value = "Color";
-    }
-    console.log("prev state", this.value);
-  }
-
-}
-
 /**
  * @type {MetaFunction<typeof loader>}
  */
@@ -58,7 +25,6 @@ export const meta = ({data}) => {
  * @param {LoaderFunctionArgs}
  */
 export async function loader({params, request, context}) {
-  console.log('in product/$handle loader');
   const {handle} = params;
   const {storefront} = context;
 
@@ -143,7 +109,8 @@ export default function Product() {
   /** @type {LoaderReturnData} */
   const {product, variants} = useLoaderData();
   const {selectedVariant} = product;
-  console.log(selectedVariant);
+
+  const [selectionState, setSelectionState] = useState("Song");
 
   return (
     <div className="product">
@@ -155,6 +122,8 @@ export default function Product() {
         selectedVariant={selectedVariant}
         product={product}
         variants={variants}
+        state={selectionState}
+        onStateChange={setSelectionState}
       />
     </div>
   );
@@ -210,7 +179,7 @@ function ProductImage({image, variant, handle}) {
  * }}
  */
 
-function ProductMain({selectedVariant, product, variants}) {
+function ProductMain({selectedVariant, product, variants, state, onStateChange}) {
   const {title, descriptionHtml} = product;
   return (
     <div className="product-main">
@@ -236,6 +205,8 @@ function ProductMain({selectedVariant, product, variants}) {
               product={product}
               selectedVariant={selectedVariant}
               variants={data.product?.variants.nodes || []}
+              state={state}
+              onStateChange={onStateChange}
             />
           )}
         </Await>
@@ -285,27 +256,50 @@ function ProductPrice({selectedVariant}) {
  *   variants: Array<ProductVariantFragment>;
  * }}
  */
-function ProductForm({product, selectedVariant, variants}) {
-  let state = new State();
+function ProductForm({product, selectedVariant, variants, state, onStateChange}) {
+  console.log("Product options", product);
+  console.log("STATE", state);
   return (
     <div className="product-form">
-      <button onClick={() => state.previousState()}>Back</button>
-      <button onClick={() => state.nextState()}>Next</button>
-      <VariantSelector
-        handle={product.handle}
-        options={product.options}
-        variants={variants}
-      >
-        {({option}) => 
-          {
-            // console.log("Option in ProductForm", option)
-            return(
-              <ProductOptions key={option.name} option={option} state={state} />
-            )
-          
-          }
+      <button onClick={() => {onStateChange("Song")}}>Back</button>
+      <button onClick={() => {onStateChange("Color")}}>Next</button>
+      {(() => {
+        if(state == "Song"){
+          return(
+            <ProductSongSelector
+              key="Song"
+              value="askdj"
+              state={state}
+              to={`/products/${product.handle}`}
+            />
+          )
         }
-      </VariantSelector>
+        if(state == "Color"){
+          return(
+            <VariantSelector
+              handle={product.handle}
+              options={product.options}
+              variants={variants}
+            >
+              {({option}) => 
+                {
+                  return(
+                    <ProductOptions
+                      key={option.name}
+                      option={option}
+                      state={state}
+                      onStateChange={onStateChange}
+                    />
+                  )
+                }
+              }
+              
+            </VariantSelector>
+          )
+        }
+      })()}
+
+      
       <br />
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
@@ -329,13 +323,56 @@ function ProductForm({product, selectedVariant, variants}) {
   );
 }
 
+
+function ProductSongSelector({key, value, to, state}){
+  const [inputValue, setInputValue] = useState(value);
+
+  return (
+    <div className="product-options" key={key}>
+      <h5>Select Song</h5>
+      <div className="product-options-grid">
+          <div>
+            <input 
+              className="field__input"
+              type="text"
+              id="song-name"
+              name="properties[Song Name]"
+              value={inputValue}
+              onChange={(event) => {
+                setInputValue(event.target.value);
+                console.log("Value change", event);
+              }}
+              required />
+            <button
+              onClick={() =>{
+                console.log(button-clicked)
+              }}
+            >
+              Confirm
+            </button>
+            <Link
+                className="product-options-item"
+                key={key + value}
+                prefetch="intent"
+                preventScrollReset
+                replace
+                to={`?Song=${inputValue}`}
+              >
+                Create design
+              </Link>
+          </div>
+      </div>
+      <br />
+    </div>
+  );
+}
 /**
  * @param {{option: VariantOption}}
  */
-function ProductOptions({option, state}) {
+function ProductOptions({option, state, onStateChange}) {
   console.log("Option", option);
-  console.log("State", state);
-  if(option.name == "Color" && state.value == "Color"){
+  console.log("State", state, onStateChange);
+  if(option.name == "Color" && state == "Color"){
     return (
       <div className="product-options" key={option.name}>
         <h5>{option.name}</h5>
@@ -364,7 +401,7 @@ function ProductOptions({option, state}) {
     );
   }
 
-  if(option.name == "Size" && state.value == "Size"){
+  if(option.name == "Size" && state == "Size"){
     return (
       <div className="product-options" key={option.name}>
         <h5>{option.name}</h5>

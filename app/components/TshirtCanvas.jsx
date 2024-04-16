@@ -7,6 +7,7 @@ import { OrbitControls } from '@react-three/drei'
 import TshirtModel from '../assets/models/tshirt-new.glb'
 import * as THREE from 'three';
 
+
 function createCanvasTexture(color) {
 	const canvas = document.createElement('canvas');
 	const ctx = canvas.getContext('2d');
@@ -18,8 +19,6 @@ function createCanvasTexture(color) {
 	// Draw your texture here
 	console.log(color);
 	console.log("Creating texture..");
-	ctx.fillStyle = '#fff';
-	ctx.fillText('Allwin Williams', 10, 50);
 
 	if(color == "Beige"){
 		ctx.fillStyle = '#E1C699';
@@ -28,6 +27,9 @@ function createCanvasTexture(color) {
 	if(color == "Black"){
 		ctx.fillStyle = '#111';
 	}
+	ctx.fillStyle = '#fff';
+	ctx.fillText('Allwin Williams', 10, 50);
+
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 	
 	ctx.font = '24px Arial';
@@ -35,7 +37,7 @@ function createCanvasTexture(color) {
 
 	// Convert canvas to texture
 	return new THREE.CanvasTexture(canvas);
-  }
+}
 
 export function Tshirt({color}) {
 	const gltf = useLoader(GLTFLoader, "/models/tshirt-new.glb");
@@ -73,16 +75,21 @@ export function Tshirt({color}) {
 	);
 }
 
-export default function TshirtCanvas({color}){
-	console.log("canvas color: " + color);
+export default function TshirtCanvas({color, song}){
+	console.log("canvas color: ", color);
+	console.log("Song: ", song);
 	return (
-		<Canvas id="threejs-canvas">
-			{/* <PerspectiveCamera position={[5, 5, 5]} makeDefault /> */}
-			<ambientLight intensity={Math.PI / 2} />
-			<spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-			<pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-			<Tshirt color={color} />
-			<OrbitControls minDistance={2} maxDistance={5}/>
-		</Canvas>
+		<div>
+			<p>Song ID: {song}</p>
+			<Canvas id="threejs-canvas">
+				{/* <PerspectiveCamera position={[5, 5, 5]} makeDefault /> */}
+				<ambientLight intensity={Math.PI / 2} />
+				<spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
+				<pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
+				<Tshirt color={color} />
+				<OrbitControls minDistance={2} maxDistance={5}/>
+			</Canvas>
+		</div>
+		
 	)
 }
