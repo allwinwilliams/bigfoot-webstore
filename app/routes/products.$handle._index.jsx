@@ -262,6 +262,9 @@ function ProductPrice({selectedVariant}) {
  * }}
  */
 function ProductForm({product, selectedVariant, variants}) {
+  console.log("product", product)
+  console.log("variants", variants)
+  console.log("selected variant", selectedVariant)
   return (
     <div className="product-form">
       <VariantSelector
@@ -271,7 +274,6 @@ function ProductForm({product, selectedVariant, variants}) {
       >
         {({option}) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
-      
       <br />
       
       <AddToCartButton
@@ -300,32 +302,35 @@ function ProductForm({product, selectedVariant, variants}) {
  * @param {{option: VariantOption}}
  */
 function ProductOptions({option}) {
-  return (
-    <div className="product-options" key={option.name}>
-      <h5>{option.name}</h5>
-      <div className="product-options-grid">
-        {option.values.map(({value, isAvailable, isActive, to}) => {
-          return (
-            <Link
-              className="product-options-item"
-              key={option.name + value}
-              prefetch="intent"
-              preventScrollReset
-              replace
-              to={to}
-              style={{
-                border: isActive ? '1px solid black' : '1px solid transparent',
-                opacity: isAvailable ? 1 : 0.3,
-              }}
-            >
-              {value}
-            </Link>
-          );
-        })}
+  if(option.name == "Size"){
+    return (
+      <div className="product-options" key={option.name}>
+        <h5>{option.name}</h5>
+        <div className="product-options-grid">
+          {option.values.map(({value, isAvailable, isActive, to}) => {
+            return (
+              <Link
+                className="product-options-item"
+                key={option.name + value}
+                prefetch="intent"
+                preventScrollReset
+                replace
+                to={to}
+                style={{
+                  border: isActive ? '1px solid black' : '1px solid transparent',
+                  opacity: isAvailable ? 1 : 0.3,
+                }}
+              >
+                {value}
+              </Link>
+            );
+          })}
+        </div>
+        <br />
       </div>
-      <br />
-    </div>
-  );
+    );
+  }
+ 
 }
 
 
@@ -369,12 +374,15 @@ function AddToCartButton({analytics, children, disabled, lines, onClick}) {
  * @param {{product: product}}
  */
 function CustomiseButton({product}){
-  console.log("link to", `/customise/${product.handle}`);
+  let customise_link = `/products/${product.handle}/customise`;
+  console.log("link to", customise_link);
   return(
     <Link
       className="product-cusomisation-link"
-      key={product.id}
-      to={`/customise/${product.handle}`}
+      key={`${product.id}-${product.handle}`}
+      replace
+      prefetch="intent"
+      to={customise_link}
     >
       Customise
     </Link>

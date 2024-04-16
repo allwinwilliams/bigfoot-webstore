@@ -14,6 +14,39 @@ import {
 
 import {getVariantUrl} from '~/lib/variants';
 
+class State{
+  constructor(){
+    this.value = "Color";
+  }
+
+  nextState(){
+    if(this.value == "Spotify"){
+      this.value = "Color";
+    }
+    if(this.value == "Color"){
+      this.value = "Size";
+    }
+    if(this.value == "Size"){
+      this.value = "Color";
+    }
+    console.log("next state", this.value);
+  }
+
+  previousState(){
+    if(this.value == "Spotify"){
+      this.value = "Size"
+    }
+    if(this.value == "Size"){
+      this.value = "Color"
+    }
+    if(this.value == "Size"){
+      this.value = "Color";
+    }
+    console.log("prev state", this.value);
+  }
+
+}
+
 /**
  * @type {MetaFunction<typeof loader>}
  */
@@ -182,6 +215,7 @@ function ProductMain({selectedVariant, product, variants}) {
   return (
     <div className="product-main">
       <h1>{title}</h1>
+      <h2>CUSTOMISE TSHIRT</h2>
       <ProductPrice selectedVariant={selectedVariant} />
       <br />
       <Suspense
@@ -252,14 +286,25 @@ function ProductPrice({selectedVariant}) {
  * }}
  */
 function ProductForm({product, selectedVariant, variants}) {
+  let state = new State();
   return (
     <div className="product-form">
+      <button onClick={() => state.previousState()}>Back</button>
+      <button onClick={() => state.nextState()}>Next</button>
       <VariantSelector
         handle={product.handle}
         options={product.options}
         variants={variants}
       >
-        {({option}) => <ProductOptions key={option.name} option={option} />}
+        {({option}) => 
+          {
+            // console.log("Option in ProductForm", option)
+            return(
+              <ProductOptions key={option.name} option={option} state={state} />
+            )
+          
+          }
+        }
       </VariantSelector>
       <br />
       <AddToCartButton
@@ -287,33 +332,67 @@ function ProductForm({product, selectedVariant, variants}) {
 /**
  * @param {{option: VariantOption}}
  */
-function ProductOptions({option}) {
-  return (
-    <div className="product-options" key={option.name}>
-      <h5>{option.name}</h5>
-      <div className="product-options-grid">
-        {option.values.map(({value, isAvailable, isActive, to}) => {
-          return (
-            <Link
-              className="product-options-item"
-              key={option.name + value}
-              prefetch="intent"
-              preventScrollReset
-              replace
-              to={to}
-              style={{
-                border: isActive ? '1px solid black' : '1px solid transparent',
-                opacity: isAvailable ? 1 : 0.3,
-              }}
-            >
-              {value}
-            </Link>
-          );
-        })}
+function ProductOptions({option, state}) {
+  console.log("Option", option);
+  console.log("State", state);
+  if(option.name == "Color" && state.value == "Color"){
+    return (
+      <div className="product-options" key={option.name}>
+        <h5>{option.name}</h5>
+        <div className="product-options-grid">
+          {option.values.map(({value, isAvailable, isActive, to}) => {
+            return (
+              <Link
+                className="product-options-item"
+                key={option.name + value}
+                prefetch="intent"
+                preventScrollReset
+                replace
+                to={`${to}/customise`}
+                style={{
+                  border: isActive ? '1px solid black' : '1px solid transparent',
+                  opacity: isAvailable ? 1 : 0.3,
+                }}
+              >
+                {value}
+              </Link>
+            );
+          })}
+        </div>
+        <br />
       </div>
-      <br />
-    </div>
-  );
+    );
+  }
+
+  if(option.name == "Size" && state.value == "Size"){
+    return (
+      <div className="product-options" key={option.name}>
+        <h5>{option.name}</h5>
+        <div className="product-options-grid">
+          {option.values.map(({value, isAvailable, isActive, to}) => {
+            return (
+              <Link
+                className="product-options-item"
+                key={option.name + value}
+                prefetch="intent"
+                preventScrollReset
+                replace
+                to={to}
+                style={{
+                  border: isActive ? '1px solid black' : '1px solid transparent',
+                  opacity: isAvailable ? 1 : 0.3,
+                }}
+              >
+                {value}
+              </Link>
+            );
+          })}
+        </div>
+        <br />
+      </div>
+    );
+  }
+  
 }
 
 /**
