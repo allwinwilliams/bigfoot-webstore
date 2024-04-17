@@ -4,6 +4,8 @@ import {Await, Link, useLoaderData} from '@remix-run/react';
 import TshirtCanvas from '../components/TshirtCanvas';
 import AIShirtCanvas from '../components/AIShirtCanvas';
 
+import Button from '@mui/material/Button';
+
 import {
   Image,
   Money,
@@ -261,8 +263,20 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
   console.log("STATE", state);
   return (
     <div className="product-form">
-      <button onClick={() => {onStateChange("Song")}}>Back</button>
-      <button onClick={() => {onStateChange("Color")}}>Next</button>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => {onStateChange("Song")}}
+      >
+          Back
+      </Button>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => {onStateChange("Color")}}
+        >
+          Next
+      </Button>
       {(() => {
         if(state == "Song"){
           return(

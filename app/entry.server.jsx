@@ -37,9 +37,11 @@ export default async function handleRequest(
   }
 
   responseHeaders.set('Content-Type', 'text/html');
-  console.log("header....");
+  
   let csvheader = header + " https://api.stability.ai";
-  console.log(csvheader);
+  csvheader = csvheader + " https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"
+  console.log("CSV header: ", csvheader);
+  
   responseHeaders.set('Content-Security-Policy', csvheader);
 
   return new Response(body, {
