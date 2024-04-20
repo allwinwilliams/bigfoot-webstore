@@ -22,7 +22,13 @@ const {nonce, header, NonceProvider} = createContentSecurityPolicy({
       'https://accounts.spotify.com',
       'https://accounts.spotify.com/api:*',
       'https://api.spotify.com',
-      'https://api.spotify.com/v1/search:*'
+      'https://api.spotify.com/v1/search:*',
+  ],
+  imgSrc: [
+    "'self'",
+    'https://i.scdn.co', 
+    'data:',
+    'https://cdn.shopify.com',
   ],
 });
 

@@ -87,8 +87,8 @@ export function Tshirt({color}) {
 	return (
 		<primitive
 			object={gltf.scene}
-			position={[0, 0, 0]}
-			scale={[10, 10, 10]}
+			position={[0, -1.5, 0]}
+			scale={[15, 15, 15]}
 			children-0-castShadow
 		/>
 	);
@@ -98,7 +98,7 @@ export default function TshirtCanvas({color, song}){
 	console.log("canvas color: ", color);
 	console.log("Song: ", song);
 	return (
-		<Box sx={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+		<Box sx={{ width: '100%', height: '50vh', overflow: 'hidden' }}>
 			<Canvas id="threejs-canvas">
 				{/* <PerspectiveCamera position={[5, 5, 5]} makeDefault /> */}
 				<ambientLight intensity={Math.PI / 2} />

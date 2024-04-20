@@ -17,7 +17,14 @@ import {
   DialogActions,
   TextField,
   useMediaQuery,
-  useTheme } 
+  useTheme,
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+  CardActionArea
+} 
 from '@mui/material';
 
 
@@ -400,6 +407,14 @@ function ProductSongSelector({ value }) {
   );
 }
 
+function truncateString(str, num) {
+  if (str.length > num) {
+      return str.slice(0, num) + '...';
+  } else {
+      return str;
+  }
+}
+
 function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
 
   const CLIENT_ID = "b2cc0a3604154457ac2d7c216d8e55a1";
@@ -425,7 +440,7 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
         .then(result => result.json())
         .then((data) => {
           console.log("Got access token", data);
-          setAccessToken(data.accessToken);
+          setAccessToken(data.access_token);
           // Assuming you might want to call a prop method to set this if managed outside
         });
     }
@@ -437,7 +452,7 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
       
       const searchValue = event.target.value;
       
-      console.log("Searching..", searchValue);
+      console.log("Searching...", searchValue);
 
       const requestOptions = {
         method: 'GET',
@@ -451,6 +466,7 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
         .then(response => response.json())
         .then(data => {
           if (data.tracks && data.tracks.items) {
+            console.log("Search result", data.tracks.items);
             setTracks(data.tracks.items);
           }
         })
@@ -480,12 +496,44 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
           required
           sx={{ mt: 2 }}
         />
-        {tracks.map(track => (
-          <div key={track.id} style={{ padding: '10px 0' }}>
-            <div>Track: {track.name}</div>
-            <div>Artist: {track.artists.map(artist => artist.name).join(', ')}</div>
-          </div>
-        ))}
+        <>
+          {tracks.map(track => (
+            
+            <Card 
+              key={track.id}
+              sx={{marginBottom: 2,}}
+            >
+              <CardActionArea
+                onClick={() => handleSubmit(track.id)}
+                sx={{ display: 'flex', width: '100%', padding: '0px 1rem' }}
+              >
+                <div
+                  style={{padding: 1}}
+                >
+                  <CardMedia
+                    component="img"
+                    sx={{ width: 80, height: 80, borderRadius: '8px' }}
+                    image={track.album.images[1].url} 
+                    alt={`Cover for ${track.name}`}
+                  />
+                </div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <CardContent sx={{ flex: '1 0 auto', padding: 0, marginLeft: '8px' }}>
+                    <Typography variant="h6" component="div">
+                    {truncateString(track.name, 24)}
+                    </Typography>
+                    <Typography variant="subtitle1" color="text.secondary" component="div">
+                      {track.artists.map(artist => artist.name).join(', ')} 
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {track.album.name}
+                    </Typography>
+                  </CardContent>
+                </Box>
+              </CardActionArea>
+            </Card>
+          ))}
+        </>
       </DialogContent>
       <DialogActions sx={{ flexDirection: 'column', mx: 3, mb: 2 }}>
         <Button
