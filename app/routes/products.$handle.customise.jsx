@@ -1,4 +1,4 @@
-import {Suspense, useState} from 'react';
+import {Suspense, useState, useEffect} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useLoaderData} from '@remix-run/react';
 import TshirtCanvas from '../components/TshirtCanvas';
@@ -342,7 +342,7 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
         fullWidth
         onClick={() => {}}
       >
-        Save design
+        Save Your Design
       </Button>
     </div>
   );
@@ -353,7 +353,7 @@ function ProductSongSelector({ value }) {
   const [songId, setSongId] = useState(value);
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
-  const [accessToken, setAccessToken] = useState('');  // Suppose you manage token state here or get it from props/context
+  
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -361,12 +361,12 @@ function ProductSongSelector({ value }) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
-    setInputValue('');  // Optionally reset the input value on close
+    // setInputValue(value);
   };
 
-  const handleSubmit = () => {
-    console.log("Submit:", inputValue);
-    setSongId(inputValue);  // Assume you want to update some state with the input
+  const handleSubmit = (value) => {
+    console.log("Submit:", value);
+    setSongId(value); 
     handleClose();
   };
 
@@ -378,6 +378,10 @@ function ProductSongSelector({ value }) {
           onClick={handleOpen}
           fullWidth
           endIcon={<EditIcon />}
+          size="large"
+          style={{
+            height: '60px'
+          }}
         >
           {songId === "" ? "Select a song" : songId}
         </Button>
@@ -389,7 +393,6 @@ function ProductSongSelector({ value }) {
           inputValue={inputValue}
           setInputValue={setInputValue}
           handleSubmit={handleSubmit}
-          accessToken={accessToken}  // Ensure you have a valid access token
         />
         
       </div>
@@ -397,22 +400,54 @@ function ProductSongSelector({ value }) {
   );
 }
 
-function SongSelectionDialog({ fullScreen, open, handleClose, accessToken }) {
+function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
+
+  const CLIENT_ID = "b2cc0a3604154457ac2d7c216d8e55a1";
+  const CLIENT_SECRET = "38e579a2942f4930af3c4eed0737696a";
+  
   const [inputValue, setInputValue] = useState('');
   const [tracks, setTracks] = useState([]);
 
+  const [accessToken, setAccessToken] = useState(''); 
+
+
+  useEffect(() => {
+    if (!accessToken) {
+      const authParameters = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}`,
+      };
+
+      fetch('https://accounts.spotify.com/api/token', authParameters)
+        .then(result => result.json())
+        .then((data) => {
+          console.log("Got access token", data);
+          setAccessToken(data.accessToken);
+          // Assuming you might want to call a prop method to set this if managed outside
+        });
+    }
+  }, [accessToken]);
+  
+
   const handleSearch = (event) => {
     if (event.key === 'Enter') {
+      
       const searchValue = event.target.value;
-      const artistParameters = {
+      
+      console.log("Searching..", searchValue);
+
+      const requestOptions = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
       };
-
-      fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(searchValue)}&type=track`, artistParameters)
+      
+      fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(searchValue)}&type=track&limit=5`, requestOptions)
         .then(response => response.json())
         .then(data => {
           if (data.tracks && data.tracks.items) {
@@ -462,7 +497,7 @@ function SongSelectionDialog({ fullScreen, open, handleClose, accessToken }) {
           Cancel
         </Button>
         <Button
-          onClick={() => handleClose(inputValue)}
+          onClick={() => handleSubmit(inputValue)}
           color="primary"
           variant="contained"
           fullWidth
@@ -484,27 +519,44 @@ function ProductOptions({option, state, onStateChange}) {
   if(option.name == "Color" && state == "Color"){
     return (
       <div className="product-options" key={option.name}>
-        <h5>{option.name}</h5>
+        {/* <h5>{option.name}</h5> */}
         <div
           className="product-options-grid"
         >
           {option.values.map(({value, isAvailable, isActive, to}) => {
-            return (
-              <Link
-                className="product-options-item"
-                key={option.name + value}
-                prefetch="intent"
-                preventScrollReset
-                replace
-                to={`${to}/customise`}
-                style={{
-                  border: isActive ? '1px solid black' : '1px solid transparent',
-                  opacity: isAvailable ? 1 : 0.3,
-                }}
-              >
-                {value}
-              </Link>
-            );
+              return (
+                <Link
+                  className="product-options-item"
+                  key={option.name + value}
+                  prefetch="intent"
+                  preventScrollReset
+                  replace
+                  to={`${to}/customise`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    flex: '0.2 0 auto',
+                    border: isActive ? '2px solid black' : '2px solid #aaa',
+                    opacity: isAvailable ? 1 : 0.3,
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    margin: '4px',
+                    padding: '12px',
+                  }}
+                >
+                  <div
+                    className="product-color-option-circle"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      backgroundColor: `${value}`,
+                      marginRight: '8px', // Adds spacing between the circle and the text
+                    }}
+                  />
+                  <b>{value}</b>
+                </Link>
+              );
           })}
         </div>
         <br />

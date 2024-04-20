@@ -4,8 +4,9 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { useLoader, useThree } from '@react-three/fiber'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from '@react-three/drei'
-import TshirtModel from '../assets/models/tshirt-new.glb'
 import * as THREE from 'three';
+import { Box } from '@mui/material';
+
 
 
 function createCanvasTexture(color) {
@@ -40,19 +41,35 @@ function createCanvasTexture(color) {
 }
 
 export function Tshirt({color}) {
-	const gltf = useLoader(GLTFLoader, "/models/tshirt-new.glb");
-	  const textureRef = useRef();
+
+  const gltf = useLoader(GLTFLoader, "/models/tshirt-test.glb");
+  const textureRef = useRef();
+  
+  const backgroundTexture = useLoader(THREE.TextureLoader, "/models/textures/background.jpeg");
+  const designTexture = useLoader(THREE.TextureLoader, "/models/textures/somedesign.png");
 
   useEffect(() => {
     // Create a new canvas texture with the current color
     const canvasTexture = createCanvasTexture(color);
-    textureRef.current = canvasTexture;
 
+	textureRef.current = canvasTexture;
+
+    textureRef.background = backgroundTexture;
+	textureRef.designArea = designTexture;
     // Apply the canvas texture to the model
     gltf.scene.traverse((child) => {
       if (child.isMesh) {
         child.material.map = textureRef.current;
         child.material.needsUpdate = true;
+
+		if(child.name == "Tshirt02"){
+			console.log("background mesh", child)
+			child.material.map = textureRef.background;
+		}
+		if(child.name == "Tshirt02_1"){
+			console.log("design mesh", child)
+			child.material.map = textureRef.designArea;
+		}
       }
     });
 
@@ -60,18 +77,20 @@ export function Tshirt({color}) {
     return () => {
       if (textureRef.current) {
         textureRef.current.dispose();
+		textureRef.background.dispose();
+		textureRef.designArea.dispose();
       }
     };
   }, [color, gltf]);
   
-    useFrame((state, delta) => (gltf.scene.rotation.y += delta * 0.2))
+    useFrame((state, delta) => (gltf.scene.rotation.y += delta * 0.1))
 	return (
 		<primitive
-        object={gltf.scene}
-        position={[0, 0.8, 0]}
-		scale={[1.4, 1.4, 1.4]}
-        children-0-castShadow
-      />
+			object={gltf.scene}
+			position={[0, 0, 0]}
+			scale={[10, 10, 10]}
+			children-0-castShadow
+		/>
 	);
 }
 
@@ -79,8 +98,7 @@ export default function TshirtCanvas({color, song}){
 	console.log("canvas color: ", color);
 	console.log("Song: ", song);
 	return (
-		<div>
-			<p>Song ID: {song}</p>
+		<Box sx={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
 			<Canvas id="threejs-canvas">
 				{/* <PerspectiveCamera position={[5, 5, 5]} makeDefault /> */}
 				<ambientLight intensity={Math.PI / 2} />
@@ -89,7 +107,7 @@ export default function TshirtCanvas({color, song}){
 				<Tshirt color={color} />
 				<OrbitControls minDistance={2} maxDistance={5}/>
 			</Canvas>
-		</div>
+		</Box>
 		
 	)
 }
