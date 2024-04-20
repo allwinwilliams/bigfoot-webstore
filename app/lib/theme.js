@@ -12,7 +12,14 @@ const theme = createTheme({
       error: {
         main: red.A400,
       },
-      },
+  },
+  typography: {
+    button: {
+      textTransform: 'none',
+      fontWeight: '600',
+      fontSize: 16
+    }
+  }
 });
 
 export default theme;

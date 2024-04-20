@@ -68,8 +68,8 @@ export function Tshirt({color}) {
 	return (
 		<primitive
         object={gltf.scene}
-        position={[0, 1, 0]}
-		scale={[1.2, 1.2, 1.2]}
+        position={[0, 0.8, 0]}
+		scale={[1.4, 1.4, 1.4]}
         children-0-castShadow
       />
 	);

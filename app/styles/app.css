@@ -379,6 +379,10 @@ aside li {
   width: 100%;
 }
 
+.product-form{
+  border-radius: 32px 32px 0 0;
+}
+
 .product-form .add-to-cart{
   width: 100%;
   color: #fff;
@@ -417,10 +421,16 @@ aside li {
 .product-price-on-sale {
   display: flex;
   grid-gap: 0.5rem;
+  align-items: baseline;
 }
 
 .product-price-on-sale s {
   opacity: 0.5;
+}
+
+.product-price-on-sale .offer-price-amount{
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 
 .product-options-grid {
@@ -430,7 +440,14 @@ aside li {
 }
 
 .product-options-item {
-  padding: 0.25rem 0.5rem;
+  width: 60px;
+  padding: 1rem 0;
+  text-align: center;
+  border-radius: 1rem;
+}
+
+.product-options-item:hover {
+  text-decoration: none;
 }
 
 /*
@@ -476,4 +493,5 @@ aside li {
 
 .threejs-canvas canvas{
   width: 100% !important;
+  min-height: 360px;
 }

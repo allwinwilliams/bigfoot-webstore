@@ -4,7 +4,22 @@ import {Await, Link, useLoaderData} from '@remix-run/react';
 import TshirtCanvas from '../components/TshirtCanvas';
 import AIShirtCanvas from '../components/AIShirtCanvas';
 
-import Button from '@mui/material/Button';
+import ArrowBackwardIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForwardIos';
+import EditIcon from '@mui/icons-material/Edit';
+
+import { 
+  Button,
+  IconButton,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
+  TextField,
+  useMediaQuery,
+  useTheme } 
+from '@mui/material';
+
 
 import {
   Image,
@@ -185,9 +200,7 @@ function ProductMain({selectedVariant, product, variants, state, onStateChange})
   const {title, descriptionHtml} = product;
   return (
     <div className="product-main">
-      <h1>{title}</h1>
-      <h2>CUSTOMISE TSHIRT</h2>
-      <ProductPrice selectedVariant={selectedVariant} />
+      <h4>Customise: {title}</h4>
       <br />
       <Suspense
         fallback={
@@ -215,41 +228,10 @@ function ProductMain({selectedVariant, product, variants, state, onStateChange})
       </Suspense>
       <br />
       <br />
-      <p>
-        <strong>Description</strong>
-      </p>
-      <br />
-      <div dangerouslySetInnerHTML={{__html: descriptionHtml}} />
-      <br />
     </div>
   );
 }
 
-/**
- * @param {{
- *   selectedVariant: ProductFragment['selectedVariant'];
- * }}
- */
-function ProductPrice({selectedVariant}) {
-  return (
-    <div className="product-price">
-      {selectedVariant?.compareAtPrice ? (
-        <>
-          <p>Sale</p>
-          <br />
-          <div className="product-price-on-sale">
-            {selectedVariant ? <Money data={selectedVariant.price} /> : null}
-            <s>
-              <Money data={selectedVariant.compareAtPrice} />
-            </s>
-          </div>
-        </>
-      ) : (
-        selectedVariant?.price && <Money data={selectedVariant?.price} />
-      )}
-    </div>
-  );
-}
 
 /**
  * @param {{
@@ -262,27 +244,66 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
   console.log("Product options", product);
   console.log("STATE", state);
   return (
-    <div className="product-form">
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {onStateChange("Song")}}
+    <div
+      className="product-form"
+      style={{
+        position: 'fixed', // Keep it fixed relative to the screen
+        left: 0,           // Align to the left edge of the viewport
+        right: 0,          // Align to the right edge of the viewport
+        bottom: 0,         // Position it at the bottom of the viewport
+        width: '100%',     // Take the full width of the viewport
+        zIndex: 1000,      // Ensure it stays on top of other content
+        backgroundColor: 'white', // Optional, ensures content stands out
+        boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.2)', // Optional, adds shadow for better separation
+        padding: '24px'
+      }}
       >
-          Back
-      </Button>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {onStateChange("Color")}}
+      <div style={{
+        display: 'flex',      
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '10px 20px',
+        width: '100%',
+      }}>
+        <IconButton
+          aria-label="left"
+          style={{ borderRadius: '50%' }}
+          onClick={() => { onStateChange("Song") }}
         >
-          Next
-      </Button>
+          <ArrowBackwardIcon />
+        </IconButton>
+
+        <div>
+          {(() => {
+            if (state === "Song") {
+              return (
+              <b>Select a song</b>
+              );
+            }
+            if (state === "Color") {
+              return (
+                <b>Choose a color</b>
+              );
+            }
+          })()}
+        </div>
+
+        <IconButton
+          aria-label="right"
+          style={{ borderRadius: '50%' }}
+          onClick={() => { onStateChange("Color") }}
+        >
+          <ArrowForwardIcon />
+        </IconButton>
+      </div>
+      
+
       {(() => {
         if(state == "Song"){
           return(
             <ProductSongSelector
               key="Song"
-              value="askdj"
+              value=""
               state={state}
               to={`/products/${product.handle}`}
             />
@@ -307,7 +328,6 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
                   )
                 }
               }
-              
             </VariantSelector>
           )
         }
@@ -315,71 +335,146 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
 
       
       <br />
-      <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
-        onClick={() => {
-          window.location.href = window.location.href + '#cart-aside';
-        }}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                },
-              ]
-            : []
-        }
+      <Button
+        variant="contained"
+        color="primary"
+        type="submit"
+        fullWidth
+        onClick={() => {}}
       >
-        {selectedVariant?.availableForSale ? 'Create Variant' : 'Sold out'}
-      </AddToCartButton>
+        Save design
+      </Button>
     </div>
   );
 }
 
 
-function ProductSongSelector({key, value, to, state}){
-  const [inputValue, setInputValue] = useState(value);
+function ProductSongSelector({ value }) {
+  const [songId, setSongId] = useState(value);
+  const [inputValue, setInputValue] = useState('');
+  const [open, setOpen] = useState(false);
+  const [accessToken, setAccessToken] = useState('');  // Suppose you manage token state here or get it from props/context
+
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => {
+    setOpen(false);
+    setInputValue('');  // Optionally reset the input value on close
+  };
+
+  const handleSubmit = () => {
+    console.log("Submit:", inputValue);
+    setSongId(inputValue);  // Assume you want to update some state with the input
+    handleClose();
+  };
 
   return (
-    <div className="product-options" key={key}>
-      <h5>Select Song</h5>
+    <div className="product-options">
       <div className="product-options-grid">
-          <div>
-            <input 
-              className="field__input"
-              type="text"
-              id="song-name"
-              name="properties[Song Name]"
-              value={inputValue}
-              onChange={(event) => {
-                setInputValue(event.target.value);
-                console.log("Value change", event);
-              }}
-              required />
-            <button
-              onClick={() =>{
-                console.log(button-clicked)
-              }}
-            >
-              Confirm
-            </button>
-            <Link
-                className="product-options-item"
-                key={key + value}
-                prefetch="intent"
-                preventScrollReset
-                replace
-                to={`?Song=${inputValue}`}
-              >
-                Create design
-              </Link>
-          </div>
+        <Button
+          variant="outlined"
+          onClick={handleOpen}
+          fullWidth
+          endIcon={<EditIcon />}
+        >
+          {songId === "" ? "Select a song" : songId}
+        </Button>
+
+        <SongSelectionDialog
+          fullScreen={fullScreen}
+          open={open}
+          handleClose={handleClose}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          handleSubmit={handleSubmit}
+          accessToken={accessToken}  // Ensure you have a valid access token
+        />
+        
       </div>
-      <br />
     </div>
   );
 }
+
+function SongSelectionDialog({ fullScreen, open, handleClose, accessToken }) {
+  const [inputValue, setInputValue] = useState('');
+  const [tracks, setTracks] = useState([]);
+
+  const handleSearch = (event) => {
+    if (event.key === 'Enter') {
+      const searchValue = event.target.value;
+      const artistParameters = {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      };
+
+      fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(searchValue)}&type=track`, artistParameters)
+        .then(response => response.json())
+        .then(data => {
+          if (data.tracks && data.tracks.items) {
+            setTracks(data.tracks.items);
+          }
+        })
+        .catch(error => console.log('Error fetching tracks:', error));
+    }
+  };
+
+  return (
+    <Dialog
+      fullScreen={fullScreen}
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="sm"
+    >
+      <DialogTitle>Select a Song</DialogTitle>
+      <DialogContent>
+        <TextField
+          fullWidth
+          id="song-search"
+          label="Search Song"
+          type="text"
+          variant="outlined"
+          value={inputValue}
+          onChange={(event) => setInputValue(event.target.value)}
+          onKeyDown={handleSearch}
+          required
+          sx={{ mt: 2 }}
+        />
+        {tracks.map(track => (
+          <div key={track.id} style={{ padding: '10px 0' }}>
+            <div>Track: {track.name}</div>
+            <div>Artist: {track.artists.map(artist => artist.name).join(', ')}</div>
+          </div>
+        ))}
+      </DialogContent>
+      <DialogActions sx={{ flexDirection: 'column', mx: 3, mb: 2 }}>
+        <Button
+          onClick={handleClose}
+          color="primary"
+          fullWidth
+          sx={{ mb: 2 }}
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={() => handleClose(inputValue)}
+          color="primary"
+          variant="contained"
+          fullWidth
+        >
+          Submit
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+
 /**
  * @param {{option: VariantOption}}
  */
@@ -390,7 +485,9 @@ function ProductOptions({option, state, onStateChange}) {
     return (
       <div className="product-options" key={option.name}>
         <h5>{option.name}</h5>
-        <div className="product-options-grid">
+        <div
+          className="product-options-grid"
+        >
           {option.values.map(({value, isAvailable, isActive, to}) => {
             return (
               <Link

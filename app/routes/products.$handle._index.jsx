@@ -1,9 +1,11 @@
 import {Suspense} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useSearchParams, useLoaderData} from '@remix-run/react';
+
 import TshirtCanvas from '../components/TshirtCanvas';
 import AIShirtCanvas from '../components/AIShirtCanvas';
 import P5Canvas from '../components/P5Canvas';
+
 import {
   Image,
   Money,
@@ -13,6 +15,12 @@ import {
 } from '@shopify/hydrogen';
 
 import {getVariantUrl} from '~/lib/variants';
+
+import { useNavigate } from '@shopify/hydrogen';
+
+import Button from '@mui/material/Button';
+
+
 
 /**
  * @type {MetaFunction<typeof loader>}
@@ -189,18 +197,8 @@ function ProductMain({selectedVariant, product, variants}) {
   const {title, descriptionHtml} = product;
   return (
     <div className="product-main">
-      <h1>{title}</h1>
+      <h2>{title}</h2>
       <ProductPrice selectedVariant={selectedVariant} />
-      <CustomiseButton product={product} />
-      <button
-        className="product-cusomisation-link"
-        key={product.id}
-        onClick={() => {
-          history.push(`/customise/${product.handle}`)
-        }}
-      >
-        Customise
-      </button>
       <br />
       <Suspense
         fallback={
@@ -246,14 +244,14 @@ function ProductPrice({selectedVariant}) {
     <div className="product-price">
       {selectedVariant?.compareAtPrice ? (
         <>
-          <p>Sale</p>
           <br />
           <div className="product-price-on-sale">
-            {selectedVariant ? <Money data={selectedVariant.price} /> : null}
+            {selectedVariant ? <Money className="offer-price-amount" data={selectedVariant.price} /> : null}
             <s>
               <Money data={selectedVariant.compareAtPrice} />
             </s>
           </div>
+          <p>LIMITED TIME OFFER</p>
         </>
       ) : (
         selectedVariant?.price && <Money data={selectedVariant?.price} />
@@ -283,7 +281,8 @@ function ProductForm({product, selectedVariant, variants}) {
         {({option}) => <ProductOptions key={option.name} option={option} />}
       </VariantSelector>
       <br />
-      
+      <CustomiseButton product={product} />
+      <br />
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
@@ -325,7 +324,7 @@ function ProductOptions({option}) {
                 replace
                 to={to}
                 style={{
-                  border: isActive ? '1px solid black' : '1px solid transparent',
+                  border: isActive ? '2px solid black' : '2px solid #aaaaaa',
                   opacity: isAvailable ? 1 : 0.3,
                 }}
               >
@@ -355,7 +354,8 @@ function ProductOptions({option}) {
 
 function AddToCartButton({analytics, children, disabled, lines, onClick}) {
   return (
-    <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
+    <div>
+      <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
       {(fetcher) => (
         <>
           <input
@@ -363,38 +363,62 @@ function AddToCartButton({analytics, children, disabled, lines, onClick}) {
             type="hidden"
             value={JSON.stringify(analytics)}
           />
-          <button
+          <Button
             type="submit"
             onClick={onClick}
             className="add-to-cart"
             disabled={disabled ?? fetcher.state !== 'idle'}
           >
             {children}
-          </button>
+          </Button>
         </>
       )}
     </CartForm>
+    </div>
+    
   );
 }
-
 
 /**
  * @param {{product: product}}
  */
 function CustomiseButton({product}){
+  // const navigate = useNavigate(); // Hydrogen's navigate hook
   let customise_link = `/products/${product.handle}/customise`;
+  const handleClick = () => {
+      console.log('Button clicked to customise'); 
+      window.location.href = customise_link;
+      // navigate('/customise'); // Navigate to the /customise route
+  };
+
+  
   console.log("link to", customise_link);
   return(
-    <Link
+    <div>
+      {/* <Link
       className="product-cusomisation-link"
       key={`${product.id}-${product.handle}`}
       replace
       prefetch="intent"
       to={customise_link}
     >
-      Customise
-    </Link>
-  )
+        Customise
+      </Link> */}
+      
+      <Button
+        className="customise-button"
+        variant="contained"
+        color="primary"
+        type="submit"
+        href={customise_link}
+        onClick={handleClick}
+        fullWidth
+      >
+            Customise
+      </Button>
+
+    </div>
+  );
 }
 
 const PRODUCT_VARIANT_FRAGMENT = `#graphql
