@@ -27,7 +27,7 @@ function createCanvasTexture(color) {
 	if(color == "Black"){
 		ctx.fillStyle = '#111';
 	}
-	ctx.fillStyle = '#fff';
+	
 	ctx.fillText('Allwin Williams', 10, 50);
 
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
