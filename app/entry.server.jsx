@@ -16,21 +16,21 @@ export default async function handleRequest(
   remixContext,
 ) {
   
-const {nonce, header, NonceProvider} = createContentSecurityPolicy({
-  connectSrc: [
-      'https://api.stability.ai:*',
-      'https://accounts.spotify.com',
-      'https://accounts.spotify.com/api:*',
-      'https://api.spotify.com',
-      'https://api.spotify.com/v1/search:*',
-  ],
-  imgSrc: [
-    "'self'",
-    'https://i.scdn.co', 
-    'data:',
-    'https://cdn.shopify.com',
-  ],
-});
+  const {nonce, header, NonceProvider} = createContentSecurityPolicy({
+    connectSrc: [
+        'https://api.stability.ai:*',
+        'https://accounts.spotify.com',
+        'https://accounts.spotify.com/api:*',
+        'https://api.spotify.com',
+        'https://api.spotify.com/v1/search:*',
+    ],
+    imgSrc: [
+      "'self'",
+      'https://i.scdn.co', 
+      'data:',
+      'https://cdn.shopify.com',
+    ],
+  });
 
   const body = await renderToReadableStream(
     <NonceProvider>

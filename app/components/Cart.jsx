@@ -1,6 +1,10 @@
 import {CartForm, Image, Money} from '@shopify/hydrogen';
 import {Link} from '@remix-run/react';
 import {useVariantUrl} from '~/lib/variants';
+import { 
+  Button,
+  IconButton } 
+from '@mui/material';
 
 /**
  * @param {CartMainProps}
@@ -121,10 +125,17 @@ function CartCheckoutActions({checkoutUrl}) {
   if (!checkoutUrl) return null;
 
   return (
-    <div>
-      <a href={checkoutUrl} target="_self">
+    <div style={{padding: '1rem 0'}}>
+      <Button 
+        href={checkoutUrl}
+        variant="contained"
+        color="primary"
+        target="_self"
+        size="large"
+        fullWidth
+      >
         <p>Continue to Checkout &rarr;</p>
-      </a>
+      </Button>
       <br />
     </div>
   );
@@ -148,7 +159,7 @@ export function CartSummary({cost, layout, children = null}) {
         <dt>Subtotal</dt>
         <dd>
           {cost?.subtotalAmount?.amount ? (
-            <Money data={cost?.subtotalAmount} />
+            <b><Money data={cost?.subtotalAmount} /></b>
           ) : (
             '-'
           )}
@@ -169,7 +180,12 @@ function CartLineRemoveButton({lineIds}) {
       action={CartForm.ACTIONS.LinesRemove}
       inputs={{lineIds}}
     >
-      <button type="submit">Remove</button>
+      <Button 
+        type="submit"
+        variant="outlined"
+      >
+        Remove
+      </Button>
     </CartForm>
   );
 }
@@ -185,7 +201,7 @@ function CartLineQuantity({line}) {
 
   return (
     <div className="cart-line-quantity">
-      <small>Quantity: {quantity} &nbsp;&nbsp;</small>
+      {/* <small>Quantity: {quantity} &nbsp;&nbsp;</small>
       <CartLineUpdateButton lines={[{id: lineId, quantity: prevQuantity}]}>
         <button
           aria-label="Decrease quantity"
@@ -206,7 +222,7 @@ function CartLineQuantity({line}) {
           <span>&#43;</span>
         </button>
       </CartLineUpdateButton>
-      &nbsp;
+      &nbsp; */}
       <CartLineRemoveButton lineIds={[lineId]} />
     </div>
   );
@@ -299,7 +315,7 @@ function CartDiscounts({discountCodes}) {
         <div>
           <input type="text" name="discountCode" placeholder="Discount code" />
           &nbsp;
-          <button type="submit">Apply</button>
+          <Button type="submit">Apply</Button>
         </div>
       </UpdateDiscountForm>
     </div>

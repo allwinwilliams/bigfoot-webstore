@@ -163,6 +163,8 @@ function ProductImage({image, variant, handle}) {
       <div className="threejs-canvas">
         <TshirtCanvas 
           color={variant.selectedOptions[0].value}
+          camerapos={[5, 5, 5]}
+          fov={50}
         />
       </div>
     );
@@ -340,7 +342,6 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
         }
       })()}
 
-      
       <br />
       <Button
         variant="contained"

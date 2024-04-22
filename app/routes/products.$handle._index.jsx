@@ -1,4 +1,5 @@
-import {Suspense} from 'react';
+import {Suspense, useState} from 'react';
+
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useSearchParams, useLoaderData} from '@remix-run/react';
 
@@ -14,13 +15,15 @@ import {
   CartForm,
 } from '@shopify/hydrogen';
 
+import { 
+  Button,
+  Box
+} 
+from '@mui/material';
+
 import {getVariantUrl} from '~/lib/variants';
-
-import { useNavigate } from '@shopify/hydrogen';
-
-import Button from '@mui/material/Button';
-
-
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 
 /**
  * @type {MetaFunction<typeof loader>}
@@ -134,28 +137,146 @@ export default function Product() {
   );
 }
 
+
+function ProductInspirations({ samples, selectedTshirt, onSelectTshirt }) {
+  return (
+    // Outer container to control the overall sizing and positioning
+    <Box sx={{
+        maxWidth: '100%',  // Ensures it does not exceed the width of the viewport
+        overflow: 'hidden',  // Prevents any internal component from affecting the outer layout
+    }}>
+      {/* Scrollable container for T-shirt samples */}
+      <Box sx={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 2,
+          overflowX: 'auto',
+          padding: 2,
+          '&::-webkit-scrollbar': {
+            height: '8px'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderRadius: '4px'
+          }
+      }}>
+        {samples.map(sample => (
+          <Box
+              key={sample.id}
+              sx={{
+                  minWidth: 300,  // Ensures each card has a minimum width
+                  height: 100,
+                  backgroundImage: `url(${sample.imageUrl})`,
+                  backgroundSize: 'cover',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                  border: selectedTshirt.id === sample.id ? '2px solid #222' : '2px solid #bbb',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  flexShrink: 0,
+              }}
+              onClick={() => onSelectTshirt(sample)}
+          >
+              <Box sx={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  padding: '8px',
+                  borderRadius: '4px'
+              }}>
+                  {sample.color.toUpperCase()} T-Shirt
+              </Box>
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
+}
+
 /**
  * @param {{image: ProductVariantFragment['image']}}
  */
-function ProductImage({image, variant, handle}) {
+function ProductImage({ image, variant, handle }) {
   console.log("AI TSHIRT LOADING");
   const [searchParams] = useSearchParams();
   const songId = searchParams.get('Song');
-  
-  console.log("SongID", searchParams.get('Song'));
+
+  console.log("SongID", songId);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const secondaryCameraPositions = [
+      { position: [5, 4, 5], fov: 50 },  
+      { position: [8, 12, 6], fov: 10 },
+      { position: [-5, 5, 5], fov: 50 },
+      { position: [6, 6, 5], fov: 10 }
+  ];
+
+  const tshirtSamples = [
+    { id: 1, color: 'red', imageUrl: 'path/to/red-shirt.jpg', position: [5, 4, 5], fov: 50 },
+    { id: 2, color: 'blue', imageUrl: 'path/to/blue-shirt.jpg', position: [8, 12, 6], fov: 10 },
+    { id: 3, color: 'green', imageUrl: 'path/to/green-shirt.jpg', position: [-5, 5, 5], fov: 50 },
+    { id: 4, color: 'yellow', imageUrl: 'path/to/green-shirt.jpg', position: [-5, 5, 5], fov: 50 },
+    { id: 5, color: 'purple', imageUrl: 'path/to/green-shirt.jpg', position: [-5, 5, 5], fov: 50 },
+  ];
+
+const [selectedTshirt, setSelectedTshirt] = useState(tshirtSamples[0]);
+
+  const handlePrevClick = () => {
+      if (currentIndex > 0) {
+          setCurrentIndex(currentIndex - 1);
+      } else {
+          setCurrentIndex(secondaryCameraPositions.length - 1);
+      }
+  };
+
+  const handleNextClick = () => {
+      if (currentIndex < secondaryCameraPositions.length - 1) {
+          setCurrentIndex(currentIndex + 1);
+      } else {
+          setCurrentIndex(0);
+      }
+  };
+
   if (handle === 'data-art-oversized-tshirt') {
-    return (
-      <div>
-        <P5Canvas song={songId} />
-        <div className="threejs-canvas">
-          <TshirtCanvas 
-            color={variant.selectedOptions[0].value}
-            song={songId}
-          />
-        </div>
-      </div>
-     
-    );
+      return (
+          <Box
+            sx={{
+              maxWidth: '100vw', // Limiting maximum width to the viewport width
+              width: '100vw', // Ensuring the width is exactly 100% of the viewport width
+              margin: '0', // Removes any default margin
+              padding: '0', // Removes any default padding
+              overflowX: 'hidden', // Hides any horizontal overflow
+            }}
+          >
+              <P5Canvas song={songId} />
+              <Box className="threejs-canvas" style={{ position: 'relative' }}>
+                  <TshirtCanvas 
+                      key={JSON.stringify(secondaryCameraPositions[currentIndex])}
+                      color={variant.selectedOptions[0].value}
+                      song={songId}
+                      camerapos={secondaryCameraPositions[currentIndex].position}
+                      fov={secondaryCameraPositions[currentIndex].fov}
+                      width="100%"
+                      height="60vh"
+                  />
+                  <Box sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      height: '100%'
+                  }}>
+                      <Button onClick={handlePrevClick}><ArrowBackIosIcon /></Button>
+                      <Button onClick={handleNextClick}><ArrowForwardIosIcon /></Button>
+                  </Box>
+              </Box>
+              <ProductInspirations samples={tshirtSamples} selectedTshirt={selectedTshirt} onSelectTshirt={setSelectedTshirt} />
+          </Box>
+      );
   }
 
   if (handle === 'short-sleeve-ai-generated-unisex-shirt') {
@@ -197,7 +318,9 @@ function ProductMain({selectedVariant, product, variants}) {
   const {title, descriptionHtml} = product;
   return (
     <div className="product-main">
-      <h1>{title}</h1>
+      <h1
+        style={{marginBottom: 0}}
+      >{title}</h1>
       <ProductPrice selectedVariant={selectedVariant} />
       <br />
       <Suspense
@@ -391,20 +514,9 @@ function CustomiseButton({product}){
       // navigate('/customise'); // Navigate to the /customise route
   };
 
-  
   console.log("link to", customise_link);
   return(
     <div>
-      {/* <Link
-      className="product-cusomisation-link"
-      key={`${product.id}-${product.handle}`}
-      replace
-      prefetch="intent"
-      to={customise_link}
-    >
-        Customise
-      </Link> */}
-      
       <Button
         className="customise-button"
         variant="contained"
