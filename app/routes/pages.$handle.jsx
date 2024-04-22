@@ -1,5 +1,10 @@
 import {json} from '@shopify/remix-oxygen';
 import {useLoaderData} from '@remix-run/react';
+import { 
+  Box
+} 
+from '@mui/material';
+
 
 /**
  * @type {MetaFunction<typeof loader>}
@@ -35,10 +40,21 @@ export default function Page() {
 
   return (
     <div className="page">
-      <header>
+      <header
+        style={{
+          padding: '1rem'
+        }}
+      >
         <h1>{page.title}</h1>
       </header>
-      <main dangerouslySetInnerHTML={{__html: page.body}} />
+      
+        <main
+          dangerouslySetInnerHTML={{__html: page.body}} 
+          style={{
+            padding: '1rem'
+          }}
+        />
+      
     </div>
   );
 }

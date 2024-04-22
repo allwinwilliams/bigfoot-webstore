@@ -3,6 +3,11 @@ import {Await, useLoaderData, Link} from '@remix-run/react';
 import {Suspense} from 'react';
 import {Image, Money} from '@shopify/hydrogen';
 
+import { 
+  Box
+} 
+from '@mui/material';
+
 /**
  * @type {MetaFunction}
  */
@@ -26,10 +31,16 @@ export default function Homepage() {
   /** @type {LoaderReturnData} */
   const data = useLoaderData();
   return (
-    <div className="home">
+    <Box
+      className="home"
+      sx={{
+        padding: {md: '1rem'}
+      }}
+    
+    >
       <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} />
-    </div>
+    </Box>
   );
 }
 

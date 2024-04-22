@@ -265,7 +265,7 @@ const [selectedTshirt, setSelectedTshirt] = useState(tshirtSamples[0]);
             <TshirtCanvas 
               key={JSON.stringify(secondaryCameraPositions[currentIndex])}
               color={variant.selectedOptions[0].value}
-              song={songId}
+              song={selectedTshirt.songId}
               camerapos={secondaryCameraPositions[currentIndex].position}
               fov={secondaryCameraPositions[currentIndex].fov}
               width="100%"

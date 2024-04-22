@@ -1,4 +1,4 @@
-import {Suspense, useState, useEffect} from 'react';
+import {Suspense, useState, useEffect, createContext, useContext} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useLoaderData} from '@remix-run/react';
 import TshirtCanvas from '../components/TshirtCanvas';
@@ -43,6 +43,53 @@ import {getVariantUrl} from '~/lib/variants';
  */
 export const meta = ({data}) => {
   return [{title: `Bigfoot | ${data?.product.title ?? ''}`}];
+};
+
+const ProductContext = createContext();
+
+export function useProduct() {
+    return useContext(ProductContext);
+}
+
+export const ProductProvider = ({ children }) => {
+    const [productState, setProductState] = useState({
+        active: "Song",
+        values: [
+            { type: "Song", value: {} },
+            { type: "Color", value: {} },
+            { type: "Style", value: {} }
+        ]
+    });
+    
+    const setActive = (newActive) => {
+      setProductState(prevState => ({
+          ...prevState,
+          active: newActive
+      }));
+    };
+
+    const updateStateValue = (type, newValue) => {
+      const updatedValues = productState.values.map(item => {
+          if (item.type === type) {
+              // Update the color value
+              const updatedItem = { ...item, value: newValue };
+              // Optional: Upload the updated item
+              uploadColorValue(updatedItem);
+              return updatedItem;
+          }
+          return item; 
+      });
+      setProductState((prevState) => ({
+        ...prevState,
+        values: updatedValues
+      }));
+    };
+
+    return (
+        <ProductContext.Provider value={{ productState, setProductState, setActive, updateStateValue }}>
+            {children}
+        </ProductContext.Provider>
+    );
 };
 
 /**
@@ -134,22 +181,20 @@ export default function Product() {
   const {product, variants} = useLoaderData();
   const {selectedVariant} = product;
 
-  const [selectionState, setSelectionState] = useState("Song");
-
   return (
-    <div className="product">
-      <ProductImage 
-        image={selectedVariant?.image}
-        variant={selectedVariant}
-        handle={product.handle} />
-      <ProductMain
-        selectedVariant={selectedVariant}
-        product={product}
-        variants={variants}
-        state={selectionState}
-        onStateChange={setSelectionState}
-      />
-    </div>
+    <ProductProvider>
+      <div className="product">
+        <ProductImage 
+          image={selectedVariant?.image}
+          variant={selectedVariant}
+          handle={product.handle} />
+        <ProductMain
+          selectedVariant={selectedVariant}
+          product={product}
+          variants={variants}
+        />
+      </div>
+      </ProductProvider>
   );
 }
 
@@ -206,10 +251,10 @@ function ProductImage({image, variant, handle}) {
  * }}
  */
 
-function ProductMain({selectedVariant, product, variants, state, onStateChange}) {
+function ProductMain({selectedVariant, product, variants}) {
   const {title, descriptionHtml} = product;
   return (
-    <div className="product-main">
+    <Box className="product-main">
       {/* <h4>Customise: {title}</h4> */}
       <br />
       <Suspense
@@ -221,6 +266,7 @@ function ProductMain({selectedVariant, product, variants, state, onStateChange})
           />
         }
       >
+        {console.log("Variants Data:", variants)}
         <Await
           errorElement="There was a problem loading product variants"
           resolve={variants}
@@ -230,17 +276,14 @@ function ProductMain({selectedVariant, product, variants, state, onStateChange})
               product={product}
               selectedVariant={selectedVariant}
               variants={data.product?.variants.nodes || []}
-              state={state}
-              onStateChange={onStateChange}
             />
           )}
         </Await>
       </Suspense>
-      <br />
-      <br />
-    </div>
+    </Box>
   );
 }
+
 
 
 /**
@@ -250,9 +293,10 @@ function ProductMain({selectedVariant, product, variants, state, onStateChange})
  *   variants: Array<ProductVariantFragment>;
  * }}
  */
-function ProductForm({product, selectedVariant, variants, state, onStateChange}) {
+function ProductForm({product, selectedVariant, variants}) {
+  const { productState, setActive } = useProduct();
   console.log("Product options", product);
-  console.log("STATE", state);
+  console.log("Product State", productState);
   return (
     <div
       className="product-form"
@@ -278,19 +322,19 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
         <IconButton
           aria-label="left"
           style={{ borderRadius: '50%' }}
-          onClick={() => { onStateChange("Song") }}
+          onClick={() => setActive("Song")}
         >
           <ArrowBackwardIcon />
         </IconButton>
 
         <div>
           {(() => {
-            if (state === "Song") {
+            if (productState.active === "Song") {
               return (
               <b>Select a song</b>
               );
             }
-            if (state === "Color") {
+            if (productState.active === "Color") {
               return (
                 <b>Choose a color</b>
               );
@@ -301,7 +345,7 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
         <IconButton
           aria-label="right"
           style={{ borderRadius: '50%' }}
-          onClick={() => { onStateChange("Color") }}
+          onClick={() => setActive("Color")}
         >
           <ArrowForwardIcon />
         </IconButton>
@@ -309,17 +353,16 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
       
 
       {(() => {
-        if(state == "Song"){
+        if(productState.active == "Song"){
           return(
             <ProductSongSelector
               key="Song"
               value=""
-              state={state}
               to={`/products/${product.handle}`}
             />
           )
         }
-        if(state == "Color"){
+        if(productState.active == "Color"){
           return(
             <VariantSelector
               handle={product.handle}
@@ -332,8 +375,6 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
                     <ProductOptions
                       key={option.name}
                       option={option}
-                      state={state}
-                      onStateChange={onStateChange}
                     />
                   )
                 }
@@ -358,11 +399,13 @@ function ProductForm({product, selectedVariant, variants, state, onStateChange})
 }
 
 
-function ProductSongSelector({ value }) {
+function ProductSongSelector({ value, state, onStateChange}) {
+
   const [songId, setSongId] = useState(value);
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
   
+  const {updateStateValue} = useProduct();
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -373,9 +416,18 @@ function ProductSongSelector({ value }) {
     // setInputValue(value);
   };
 
-  const handleSubmit = (value) => {
+  const handleSubmit = (track) => {
     console.log("Submit:", value);
     setSongId(value); 
+    updateStateValue(
+      "Song",
+      {
+        songId: inputValue,
+        name: track.album.name,
+        image: track.album.images[1].url,
+        artists: track.artists
+      }
+    );
     handleClose();
   };
 
@@ -419,6 +471,8 @@ function truncateString(str, num) {
 
 function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
 
+  const { productState, setProductState } = useProduct();
+  
   const CLIENT_ID = "b2cc0a3604154457ac2d7c216d8e55a1";
   const CLIENT_SECRET = "38e579a2942f4930af3c4eed0737696a";
   
@@ -506,7 +560,7 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
               sx={{marginBottom: 2,}}
             >
               <CardActionArea
-                onClick={() => handleSubmit(track.id)}
+                onClick={() => handleSubmit(track)}
                 sx={{ display: 'flex', width: '100%', padding: '0px 1rem' }}
               >
                 <div
@@ -547,7 +601,9 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
           Cancel
         </Button>
         <Button
-          onClick={() => handleSubmit(inputValue)}
+          onClick={() => {
+            handleSubmit()
+          }}
           color="primary"
           variant="contained"
           fullWidth
@@ -566,7 +622,7 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
 function ProductOptions({option, state, onStateChange}) {
   console.log("Option", option);
   console.log("State", state, onStateChange);
-  if(option.name == "Color" && state == "Color"){
+  if(option.name == "Color" && productState.type == "Color"){
     return (
       <div className="product-options" key={option.name}>
         {/* <h5>{option.name}</h5> */}
@@ -618,7 +674,7 @@ function ProductOptions({option, state, onStateChange}) {
     );
   }
 
-  if(option.name == "Size" && state == "Size"){
+  if(option.name == "Size" && productState.type == "Size"){
     return (
       <div className="product-options" key={option.name}>
         <h5>Select {option.name}</h5>

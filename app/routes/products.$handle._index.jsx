@@ -17,7 +17,8 @@ import {
 
 import { 
   Button,
-  Box
+  Box,
+  useMediaQuery, useTheme
 } 
 from '@mui/material';
 
@@ -234,13 +235,15 @@ function ProductImage({ product, image, variant, handle }) {
 
 const [selectedTshirt, setSelectedTshirt] = useState(tshirtSamples[0]);
 
-  const handlePrevClick = () => {
-      if (currentIndex > 0) {
-          setCurrentIndex(currentIndex - 1);
-      } else {
-          setCurrentIndex(secondaryCameraPositions.length - 1);
-      }
-  };
+const theme = useTheme();
+
+const handlePrevClick = () => {
+    if (currentIndex > 0) {
+        setCurrentIndex(currentIndex - 1);
+    } else {
+        setCurrentIndex(secondaryCameraPositions.length - 1);
+    }
+};
 
   const handleNextClick = () => {
       if (currentIndex < secondaryCameraPositions.length - 1) {
@@ -270,7 +273,7 @@ const [selectedTshirt, setSelectedTshirt] = useState(tshirtSamples[0]);
                       camerapos={secondaryCameraPositions[currentIndex].position}
                       fov={secondaryCameraPositions[currentIndex].fov}
                       width="100%"
-                      height="50vh"
+                      height={ useMediaQuery(theme.breakpoints.down('sm')) ? "50vh": "90vh"}
                   />
                   <CustomiseButton
                    product={product}
@@ -278,11 +281,11 @@ const [selectedTshirt, setSelectedTshirt] = useState(tshirtSamples[0]);
                     position: 'absolute',
                     top: '1rem',
                     right: '1rem',
-                    padding: '1rem'
+                    padding: '1rem',
+                    cursor: "nesw-resize"
                     }}
                     variant="outlined"
                     color="primary"
-                    cursor="nesw-resize;"
                     />
                   <Box style={{
                       position: 'absolute',
@@ -441,11 +444,15 @@ function ProductForm({product, selectedVariant, variants}) {
           window.location.href = window.location.href + '#cart-aside';
         }}
         customStyle={{
-          position: 'fixed',  // Fixes the position relative to the viewport
-          bottom: 0,           // Aligns the button at the bottom
-          left: 0,             // Aligns the button to start from the left edge
-          width: '100%',       // Makes the button stretch across the width of the screen
-          zIndex: 1100,            // Ensures the button is above most other content
+          position: {
+            xs: 'fixed', 
+            sm: 'fixed', 
+            md: 'relative'
+          },
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          zIndex: 1100,
           padding: '1.5rem',
           borderRadius: 0,  
         }}
@@ -532,7 +539,7 @@ function AddToCartButton({analytics, children, disabled, lines, onClick, customS
             onClick={onClick}
             className="add-to-cart"
             disabled={disabled ?? fetcher.state !== 'idle'}
-            style={{
+            sx={{
               ...customStyle,
             }}
           >

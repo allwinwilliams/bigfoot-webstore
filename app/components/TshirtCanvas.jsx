@@ -41,50 +41,76 @@ function createCanvasTexture(color) {
 
 export function Tshirt({color}) {
 
-  const gltf = useLoader(GLTFLoader, "/models/tshirt-test.glb");
-  const textureRef = useRef();
+	const gltf = useLoader(GLTFLoader, "/models/tshirt-apr22.glb");
+	console.log("GLTF", gltf);
+	const textureRef = useRef();
   
-  const backgroundTexture = useLoader(THREE.TextureLoader, "/models/textures/background.png");
-  const designTexture = useLoader(THREE.TextureLoader, "/models/textures/somedesign.png");
+	const backgroundTexture = useLoader(THREE.TextureLoader, "/models/textures/diffusionapr22.jpg");
+	backgroundTexture.flipY = false;
 
-  useEffect(() => {
-    // Create a new canvas texture with the current color
-    const canvasTexture = createCanvasTexture(color);
+	const normalTexture = useLoader(THREE.TextureLoader, "/models/textures/normalapr22.jpg");
+	normalTexture.wrapS = THREE.RepeatWrapping;
+	normalTexture.wrapT = THREE.RepeatWrapping;
+	normalTexture.flipY = false; 
+
+	const designTexture = useLoader(THREE.TextureLoader, "/models/textures/somedesign.png");
+	designTexture.flipY = false;
+
+	const gridTexture = useLoader(THREE.TextureLoader, "/models/textures/grid.png");
+	gridTexture.flipY = false;
+
+	useEffect(() => {
+	// Create a new canvas texture with the current color
+	const canvasTexture = createCanvasTexture(color);
 
 	textureRef.current = canvasTexture;
 
-    // textureRef.background = backgroundTexture;
+	// textureRef.background = backgroundTexture;
 	// textureRef.designArea = designTexture;
-    // Apply the canvas texture to the model
-    gltf.scene.traverse((child) => {
-      if (child.isMesh) {
-        child.material.map = textureRef.current;
-        child.material.needsUpdate = true;
+	// Apply the canvas texture to the model
+	gltf.scene.traverse((child) => {
+		if (child.isMesh) {
+		// child.material.map = textureRef.current;
+		// child.material.map = backgroundTexture;
+		// child.material.needsUpdate = true;
 		
 		child.castShadow = true;
 		child.receiveShadow = true;
-	
+		if (child.isMesh && child.name === "Tshirt1") {
+			console.log("Mesh found: ", child);
+			const material = new THREE.MeshStandardMaterial({
+				side: THREE.DoubleSide,
+				color: 'white', // Base color of the material
+				map: gridTexture, // The diffuse texture map
+				normalMap: normalTexture, // The normal map
+			});
+			child.material = material;
+			child.material.needsUpdate = true;
+			}
 
-		if(child.name == "Tshirt02"){
-			console.log("background mesh", child)
-			child.material.map = backgroundTexture;
+		// if(child.name == "Tshirt02"){
+		// 	console.log("background mesh", child)
+		// 	child.material.map = backgroundTexture;
+		// }
+		// if(child.name == "Tshirt02_1"){
+		// 	console.log("design mesh", child)
+		// 	child.material.map = designTexture;
+		// }
 		}
-		if(child.name == "Tshirt02_1"){
-			console.log("design mesh", child)
-			child.material.map = designTexture;
-		}
-      }
-    });
+	});
 
-    // Clean up the texture on component unmount
-    return () => {
-      if (textureRef.current) {
-        textureRef.current.dispose();
+	// Clean up the texture on component unmount
+	return () => {
+		if (textureRef.current) {
+		textureRef.current.dispose();
 		backgroundTexture.dispose();
+		normalTexture.dispose();
 		designTexture.dispose();
-      }
-    };
-  }, [color, gltf]);
+		gridTexture.dispose();
+		// designTexture.dispose();
+		}
+	};
+	}, [color, gltf]);
   
     // useFrame(
 	// 	(state, delta) => 
@@ -93,8 +119,8 @@ export function Tshirt({color}) {
 	return (
 		<primitive
 			object={gltf.scene}
-			position={[0, -1.5, 0]}
-			scale={[15, 15, 15]}
+			position={[0, 1, 0]}
+			scale={[0.12, 0.12, 0.12]}
 			children-0-castShadow
 			castShadow
 			receiveShadow
@@ -112,7 +138,7 @@ function GroundPlane() {
             receiveShadow={true} 
         >
             <planeGeometry args={[20, 20]} />
-            <meshStandardMaterial color="#ffffff" />
+            <meshStandardMaterial color="#f000f0" />
         </mesh>
     );
 }
@@ -156,19 +182,19 @@ export default function TshirtCanvas({color, song, camerapos=[5, 5, 5], fov = 50
                 shadows
             >
 				<CameraController targetPosition={camerapos} targetFov={fov} />
-                <ambientLight intensity={1}  color="#ffffff" />
+                <ambientLight intensity={1.2}  color="#ffffff" />
                 <spotLight
                     position={[1, 10, 1]} 
                     angle={0.3} 
                     penumbra={1.2}
-                    intensity={50} 
+                    intensity={60} 
                     castShadow
                     shadow-mapSize-width={1024}  
                     shadow-mapSize-height={1024}
                     shadow-camera-far={15} 
                     shadow-camera-near={1}
                 />
-                <pointLight position={[4, 4, 4]} intensity={2} />
+                <pointLight position={[4, 4, 4]} intensity={4} />
                 <GroundPlane />
                 <Tshirt color={color} />
 				<OrbitControls />
