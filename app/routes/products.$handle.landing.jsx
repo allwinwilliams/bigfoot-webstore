@@ -127,7 +127,6 @@ export default function Product() {
       <ProductImage 
         image={selectedVariant?.image}
         variant={selectedVariant}
-        product={product}
         handle={product.handle} />
       <ProductMain
         selectedVariant={selectedVariant}
@@ -141,11 +140,11 @@ export default function Product() {
 
 function ProductInspirations({ samples, selectedTshirt, onSelectTshirt }) {
   return (
-    <Box style={{
+    <Box sx={{
         maxWidth: {sm: '100%'},  // Ensures it does not exceed the width of the viewport
         overflow: 'hidden',  // Prevents any internal component from affecting the outer layout
     }}>
-      <Box style={{
+      <Box sx={{
           display: 'flex',
           flexDirection: 'row',
           gap: 2,
@@ -162,10 +161,10 @@ function ProductInspirations({ samples, selectedTshirt, onSelectTshirt }) {
         {samples.map(sample => (
           <Box
               key={sample.id}
-              style={{
+              sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  minWidth: 200,
+                  minWidth: 190,
                   minHeight: 300,
                   borderRadius: '8px',
                   boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
@@ -177,7 +176,7 @@ function ProductInspirations({ samples, selectedTshirt, onSelectTshirt }) {
               }}
               onClick={() => onSelectTshirt(sample)}
           >
-            <Box style={{
+            <Box sx={{
                 height: '100%',
                 backgroundImage: `url(${sample.imageUrl})`,
                 backgroundSize: 'cover',
@@ -187,7 +186,7 @@ function ProductInspirations({ samples, selectedTshirt, onSelectTshirt }) {
             {/* <img 
               src={`${sample.imageUrl}`}
             /> */}
-            <Box style={{
+            <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between', // Aligns the songName to top and songId to bottom
@@ -209,7 +208,7 @@ function ProductInspirations({ samples, selectedTshirt, onSelectTshirt }) {
 /**
  * @param {{image: ProductVariantFragment['image']}}
  */
-function ProductImage({ product, image, variant, handle }) {
+function ProductImage({ image, variant, handle }) {
   console.log("AI TSHIRT LOADING");
   const [searchParams] = useSearchParams();
   const songId = searchParams.get('Song');
@@ -251,55 +250,59 @@ const [selectedTshirt, setSelectedTshirt] = useState(tshirtSamples[0]);
   };
 
   if (handle === 'data-art-oversized-tshirt') {
-      return (
-          <Box
-            style={{
-              maxWidth: {sm: '100vw', md: '50vw'},
-              width: {sm: '100vw'},
-              margin: '0',
-              padding: '0',
-              overflowX: 'hidden',
-            }}
-          >
-              <P5Canvas song={songId} />
-              <Box className="threejs-canvas" style={{ position: 'relative' }}>
-                  <TshirtCanvas 
-                      key={JSON.stringify(secondaryCameraPositions[currentIndex])}
-                      color={variant.selectedOptions[0].value}
-                      song={songId}
-                      camerapos={secondaryCameraPositions[currentIndex].position}
-                      fov={secondaryCameraPositions[currentIndex].fov}
-                      width="100%"
-                      height="50vh"
-                  />
-                  <CustomiseButton
-                   product={product}
-                   customStyle={{
-                    position: 'absolute',
-                    top: '1rem',
-                    right: '1rem',
-                    padding: '1rem'
-                    }}
-                    variant="outlined"
-                    color="primary"
-                    cursor="nesw-resize;"
-                    />
-                  <Box style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      height: '100%'
-                  }}>
-                      <Button onClick={handlePrevClick}><ArrowBackIosIcon /></Button>
-                      <Button onClick={handleNextClick}><ArrowForwardIosIcon /></Button>
-                  </Box>
-              </Box>
-              {/* <ProductInspirations samples={tshirtSamples} selectedTshirt={selectedTshirt} onSelectTshirt={setSelectedTshirt} /> */}
+      return  (
+        <Box
+          sx={{
+            maxWidth: { sm: '100vw', md: '50vw' },
+            width: { sm: '100vw' },
+            margin: '0',
+            padding: '0',
+            overflowX: 'hidden',
+          }}
+        >
+          <P5Canvas song={songId} />
+          <Box className="threejs-canvas" sx={{ position: 'relative', height: '60vh' }}>
+            <TshirtCanvas 
+              key={JSON.stringify(secondaryCameraPositions[currentIndex])}
+              color={variant.selectedOptions[0].value}
+              song={songId}
+              camerapos={secondaryCameraPositions[currentIndex].position}
+              fov={secondaryCameraPositions[currentIndex].fov}
+              width="100%"
+              height="100%"
+            />
+            <Box sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              height: '100%',
+            }}>
+              <Button onClick={handlePrevClick}><ArrowBackIosIcon /></Button>
+              <Button onClick={handleNextClick}><ArrowForwardIosIcon /></Button>
+            </Box>
+            
+            <Button
+              onClick={() => { /* Define what this button should do */ }}
+              sx={{
+                position: 'absolute',
+                bottom: '1rem',  // 0.5 rem from the bottom
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: 'calc(100% - 1rem)',  // Full width with 0.5 rem padding on each side
+                padding: '1rem'
+              }}
+              variant="contained"
+              color="primary"
+            >
+              Customise Your Own
+            </Button>
           </Box>
+          <ProductInspirations samples={tshirtSamples} selectedTshirt={selectedTshirt} onSelectTshirt={setSelectedTshirt} />
+        </Box>
       );
   }
 
@@ -346,10 +349,7 @@ function ProductMain({selectedVariant, product, variants}) {
       style={{margin: '0 1rem'}}
     >
       <h1
-        style={{
-          marginBottom:'0.5rem',
-          marginTop: '1rem',
-        }}
+        style={{marginBottom: 0}}
       >{title}</h1>
       <ProductPrice selectedVariant={selectedVariant} />
       <br />
@@ -425,30 +425,22 @@ function ProductForm({product, selectedVariant, variants}) {
   // console.log("variants", variants)
   // console.log("selected variant", selectedVariant)
   return (
-    <div className="product-form">
-      <VariantSelector
+    <Box
+      className="product-form"
+    >
+      {/* <VariantSelector
         handle={product.handle}
         options={product.options}
         variants={variants}
       >
         {({option}) => <ProductOptions key={option.name} option={option} />}
-      </VariantSelector>
-      
-      <br />
+      </VariantSelector> */}
       <AddToCartButton
         disabled={!selectedVariant || !selectedVariant.availableForSale}
         onClick={() => {
           window.location.href = window.location.href + '#cart-aside';
         }}
-        customStyle={{
-          position: 'fixed',  // Fixes the position relative to the viewport
-          bottom: 0,           // Aligns the button at the bottom
-          left: 0,             // Aligns the button to start from the left edge
-          width: '100%',       // Makes the button stretch across the width of the screen
-          zIndex: 1100,            // Ensures the button is above most other content
-          padding: '1.5rem',
-          borderRadius: 0,  
-        }}
+        customStyle={{fullWidth: true}}
         lines={
           selectedVariant
             ? [
@@ -463,7 +455,19 @@ function ProductForm({product, selectedVariant, variants}) {
         {selectedVariant?.availableForSale ? 'Buy Now @' : 'Sold out'}
         <Money className="offer-price-amount" data={selectedVariant.price} />
       </AddToCartButton>
-    </div>
+      <Box
+        sx={{
+          marginTop: '1rem'
+        }}
+      >
+        <CustomiseButton
+          product={product}
+          customStyle={{
+            padding: '1rem 0',
+          }}
+        />
+      </Box>
+    </Box>
   );
 }
 
@@ -474,7 +478,7 @@ function ProductOptions({option}) {
   if(option.name == "Size"){
     return (
       <div className="product-options" key={option.name}>
-        <h5>Select {option.name}</h5>
+        <h5>{option.name}</h5>
         <div className="product-options-grid">
           {option.values.map(({value, isAvailable, isActive, to}) => {
             return (
@@ -514,7 +518,7 @@ function ProductOptions({option}) {
 */
 
 
-function AddToCartButton({analytics, children, disabled, lines, onClick, customStyle}) {
+function AddToCartButton({analytics, children, disabled, lines, onClick}) {
   return (
     <div>
       <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
@@ -527,13 +531,13 @@ function AddToCartButton({analytics, children, disabled, lines, onClick, customS
           />
           <Button
             type="submit"
-            variant="contained"
-            color='primary'
             onClick={onClick}
             className="add-to-cart"
             disabled={disabled ?? fetcher.state !== 'idle'}
-            style={{
-              ...customStyle,
+            variant='contained'
+            fullWidth
+            sx={{
+              padding: '1rem'
             }}
           >
             {children}
@@ -549,7 +553,7 @@ function AddToCartButton({analytics, children, disabled, lines, onClick, customS
 /**
  * @param {{product: product}}
  */
-function CustomiseButton({product, variant = 'contained', color = 'Primary', customStyle}){
+function CustomiseButton({product, customStyle}){
   // const navigate = useNavigate(); // Hydrogen's navigate hook
   let customise_link = `/products/${product.handle}/customise`;
   const handleClick = () => {
@@ -563,16 +567,17 @@ function CustomiseButton({product, variant = 'contained', color = 'Primary', cus
     <div>
       <Button
         className="customise-button"
-        variant={variant}
-        color={color}
+        variant="outlined"
+        color="primary"
         type="submit"
         href={customise_link}
         onClick={handleClick}
-        style={{
-          ...customStyle,
+        fullWidth
+        sx={{
+          ...customStyle
         }}
       >
-            Edit
+            Customise your own
       </Button>
 
     </div>

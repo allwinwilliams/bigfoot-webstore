@@ -171,7 +171,7 @@ export default function TshirtCanvas({color, song, camerapos=[5, 5, 5], fov = 50
                 <pointLight position={[4, 4, 4]} intensity={2} />
                 <GroundPlane />
                 <Tshirt color={color} />
-				{controls && <OrbitControls />}
+				<OrbitControls />
                 
             </Canvas>
         </Box>

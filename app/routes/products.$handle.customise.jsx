@@ -165,6 +165,7 @@ function ProductImage({image, variant, handle}) {
           color={variant.selectedOptions[0].value}
           camerapos={[5, 5, 5]}
           fov={50}
+          height={'70vh'}
         />
       </div>
     );
@@ -209,7 +210,7 @@ function ProductMain({selectedVariant, product, variants, state, onStateChange})
   const {title, descriptionHtml} = product;
   return (
     <div className="product-main">
-      <h4>Customise: {title}</h4>
+      {/* <h4>Customise: {title}</h4> */}
       <br />
       <Suspense
         fallback={
@@ -569,8 +570,13 @@ function ProductOptions({option, state, onStateChange}) {
     return (
       <div className="product-options" key={option.name}>
         {/* <h5>{option.name}</h5> */}
-        <div
+        <Box
           className="product-options-grid"
+          sx={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignContent: 'center'
+          }}
         >
           {option.values.map(({value, isAvailable, isActive, to}) => {
               return (
@@ -600,15 +606,14 @@ function ProductOptions({option, state, onStateChange}) {
                       height: '24px',
                       borderRadius: '50%',
                       backgroundColor: `${value}`,
-                      marginRight: '8px', // Adds spacing between the circle and the text
+                      marginRight: '8px',
                     }}
                   />
                   <b>{value}</b>
                 </Link>
               );
           })}
-        </div>
-        <br />
+        </Box>
       </div>
     );
   }
@@ -616,7 +621,7 @@ function ProductOptions({option, state, onStateChange}) {
   if(option.name == "Size" && state == "Size"){
     return (
       <div className="product-options" key={option.name}>
-        <h5>{option.name}</h5>
+        <h5>Select {option.name}</h5>
         <div className="product-options-grid">
           {option.values.map(({value, isAvailable, isActive, to}) => {
             return (
@@ -637,7 +642,6 @@ function ProductOptions({option, state, onStateChange}) {
             );
           })}
         </div>
-        <br />
       </div>
     );
   }
