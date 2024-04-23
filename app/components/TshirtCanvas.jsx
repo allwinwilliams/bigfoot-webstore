@@ -61,6 +61,8 @@ function createSongTexture(color, trackId, accessToken) {
     // const artistsY = songNameY + 150; // Some vertical padding between texts
 	// ctx.fillText(artists, artistsX, artistsY);
     // Draw text within the specified area
+
+	document.body.appendChild(canvas);
     
 	return new THREE.CanvasTexture(canvas);
 }

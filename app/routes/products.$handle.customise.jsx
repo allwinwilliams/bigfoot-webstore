@@ -7,7 +7,7 @@ import AIShirtCanvas from '../components/AIShirtCanvas';
 import ArrowBackwardIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForwardIos';
 import EditIcon from '@mui/icons-material/Edit';
-import {sendDataToFirestore} from '../lib/firebaseUtils';
+import {uploadDataWithImage, sendDataToFirestore, uploadCanvasImage} from '../lib/firebaseUtils';
 
 import { 
   Button,
@@ -400,10 +400,21 @@ function ProductForm({product, selectedVariant, variants}) {
         type="submit"
         fullWidth
         onClick={() => {
-          sendDataToFirestore(
-            "orders", 
-            {color: color, trackId: songId})
-        }}
+          let designCanvas = document.getElementById('song-design-canvas');
+          uploadDataWithImage(designCanvas, 'orders', {
+            color: color, trackId: songId 
+          }).then(result => console.log('Data and image uploaded successfully:', result))
+            .catch(error => console.error('Error uploading data and image:', error));
+          }}
+
+          // sendDataToFirestore(
+          //   "orders", {
+          //  color: color, trackId: songId 
+          //</div>}
+          //   );
+          // uploadCanvasImage(designCanvas);
+
+          
       >
         Save Your Design
       </Button>
