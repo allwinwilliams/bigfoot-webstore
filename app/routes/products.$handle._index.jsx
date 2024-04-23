@@ -264,12 +264,12 @@ const handlePrevClick = () => {
               overflowX: 'hidden',
             }}
           >
-              <P5Canvas song={songId} />
+              {/* <P5Canvas song={songId} /> */}
               <Box className="threejs-canvas" style={{ position: 'relative' }}>
                   <TshirtCanvas 
                       key={JSON.stringify(secondaryCameraPositions[currentIndex])}
                       color={variant.selectedOptions[0].value}
-                      song={songId}
+                      songId={songId}
                       camerapos={secondaryCameraPositions[currentIndex].position}
                       fov={secondaryCameraPositions[currentIndex].fov}
                       width="100%"

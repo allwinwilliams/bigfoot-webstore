@@ -23,6 +23,10 @@ export default async function handleRequest(
         'https://accounts.spotify.com/api:*',
         'https://api.spotify.com',
         'https://api.spotify.com/v1/search:*',
+        'https://firebaseinstallations.googleapis.com/',
+        'https://firebaseinstallations.googleapis.com/v1/projects/bigfoot-dd040',
+        'https://firestore.googleapis.com/',
+        'https://firestore.googleapis.com:*'
     ],
     imgSrc: [
       "'self'",

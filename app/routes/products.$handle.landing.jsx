@@ -260,7 +260,7 @@ const [selectedTshirt, setSelectedTshirt] = useState(tshirtSamples[0]);
             overflowX: 'hidden',
           }}
         >
-          <P5Canvas song={songId} />
+          {/* <P5Canvas song={songId} /> */}
           <Box className="threejs-canvas" sx={{ position: 'relative', height: '60vh' }}>
             <TshirtCanvas 
               key={JSON.stringify(secondaryCameraPositions[currentIndex])}

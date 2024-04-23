@@ -7,6 +7,7 @@ import AIShirtCanvas from '../components/AIShirtCanvas';
 import ArrowBackwardIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForwardIos';
 import EditIcon from '@mui/icons-material/Edit';
+import {sendDataToFirestore} from '../lib/firebaseUtils';
 
 import { 
   Button,
@@ -45,51 +46,53 @@ export const meta = ({data}) => {
   return [{title: `Bigfoot | ${data?.product.title ?? ''}`}];
 };
 
-const ProductContext = createContext();
+const CustomiseAppContext = createContext(null);
 
-export function useProduct() {
-    return useContext(ProductContext);
+export function useCustomiseAppContext() {
+  return useContext(CustomiseAppContext);
 }
 
-export const ProductProvider = ({ children }) => {
-    const [productState, setProductState] = useState({
-        active: "Song",
-        values: [
-            { type: "Song", value: {} },
-            { type: "Color", value: {} },
-            { type: "Style", value: {} }
-        ]
-    });
-    
-    const setActive = (newActive) => {
-      setProductState(prevState => ({
-          ...prevState,
-          active: newActive
-      }));
-    };
+export const CustomiseProvider = ({ children }) => {
+  const [accessToken, setAccessToken] = useState('');
+  const [color, setColor] = useState('Black');
+  const [songId, setSongId] = useState('');
+  const [selectionState, setSelectionState] = useState("Song");
 
-    const updateStateValue = (type, newValue) => {
-      const updatedValues = productState.values.map(item => {
-          if (item.type === type) {
-              // Update the color value
-              const updatedItem = { ...item, value: newValue };
-              // Optional: Upload the updated item
-              uploadColorValue(updatedItem);
-              return updatedItem;
-          }
-          return item; 
-      });
-      setProductState((prevState) => ({
-        ...prevState,
-        values: updatedValues
-      }));
-    };
+  useEffect(() => {
+    const CLIENT_ID = "b2cc0a3604154457ac2d7c216d8e55a1";
+    const CLIENT_SECRET = "38e579a2942f4930af3c4eed0737696a";
+    if (!accessToken) {
+      const authParameters = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}`,
+      };
 
-    return (
-        <ProductContext.Provider value={{ productState, setProductState, setActive, updateStateValue }}>
-            {children}
-        </ProductContext.Provider>
-    );
+      fetch('https://accounts.spotify.com/api/token', authParameters)
+        .then(result => result.json())
+        .then(data => setAccessToken(data.access_token));
+    }
+  }, [accessToken]);
+
+  const changeColor = (newColor) => setColor(newColor);
+  const changeSongId = (newSongId) => setSongId(newSongId);
+  const changeSelectionState = (newState) => setSelectionState(newState);
+
+  return (
+    <CustomiseAppContext.Provider value={{
+      accessToken,
+      color,
+      songId,
+      selectionState,
+      changeColor,
+      changeSongId,
+      changeSelectionState
+    }}>
+      {children}
+    </CustomiseAppContext.Provider>
+  );
 };
 
 /**
@@ -181,20 +184,22 @@ export default function Product() {
   const {product, variants} = useLoaderData();
   const {selectedVariant} = product;
 
+
   return (
-    <ProductProvider>
+    <CustomiseProvider>
       <div className="product">
         <ProductImage 
           image={selectedVariant?.image}
           variant={selectedVariant}
-          handle={product.handle} />
+          handle={product.handle} 
+        />
         <ProductMain
           selectedVariant={selectedVariant}
           product={product}
           variants={variants}
         />
       </div>
-      </ProductProvider>
+    </CustomiseProvider>
   );
 }
 
@@ -202,15 +207,18 @@ export default function Product() {
  * @param {{image: ProductVariantFragment['image']}}
  */
 function ProductImage({image, variant, handle}) {
+  const { accessToken, color, songId } = useCustomiseAppContext();
 
   if (handle === 'data-art-oversized-tshirt') {
     return (
       <div className="threejs-canvas">
         <TshirtCanvas 
-          color={variant.selectedOptions[0].value}
+          color={color}
           camerapos={[5, 5, 5]}
           fov={50}
           height={'70vh'}
+          songId={songId}
+          accessToken={accessToken}
         />
       </div>
     );
@@ -254,7 +262,7 @@ function ProductImage({image, variant, handle}) {
 function ProductMain({selectedVariant, product, variants}) {
   const {title, descriptionHtml} = product;
   return (
-    <Box className="product-main">
+    <div className="product-main">
       {/* <h4>Customise: {title}</h4> */}
       <br />
       <Suspense
@@ -266,7 +274,6 @@ function ProductMain({selectedVariant, product, variants}) {
           />
         }
       >
-        {console.log("Variants Data:", variants)}
         <Await
           errorElement="There was a problem loading product variants"
           resolve={variants}
@@ -280,10 +287,11 @@ function ProductMain({selectedVariant, product, variants}) {
           )}
         </Await>
       </Suspense>
-    </Box>
+      <br />
+      <br />
+    </div>
   );
 }
-
 
 
 /**
@@ -294,9 +302,10 @@ function ProductMain({selectedVariant, product, variants}) {
  * }}
  */
 function ProductForm({product, selectedVariant, variants}) {
-  const { productState, setActive } = useProduct();
+
+  const { color, songId, selectionState, changeSelectionState } = useCustomiseAppContext(); 
   console.log("Product options", product);
-  console.log("Product State", productState);
+  
   return (
     <div
       className="product-form"
@@ -322,19 +331,19 @@ function ProductForm({product, selectedVariant, variants}) {
         <IconButton
           aria-label="left"
           style={{ borderRadius: '50%' }}
-          onClick={() => setActive("Song")}
+          onClick={() => { changeSelectionState("Song") }}
         >
           <ArrowBackwardIcon />
         </IconButton>
 
         <div>
           {(() => {
-            if (productState.active === "Song") {
+            if (selectionState === "Song") {
               return (
               <b>Select a song</b>
               );
             }
-            if (productState.active === "Color") {
+            if (selectionState === "Color") {
               return (
                 <b>Choose a color</b>
               );
@@ -345,7 +354,7 @@ function ProductForm({product, selectedVariant, variants}) {
         <IconButton
           aria-label="right"
           style={{ borderRadius: '50%' }}
-          onClick={() => setActive("Color")}
+          onClick={() => { changeSelectionState("Color") }}
         >
           <ArrowForwardIcon />
         </IconButton>
@@ -353,7 +362,7 @@ function ProductForm({product, selectedVariant, variants}) {
       
 
       {(() => {
-        if(productState.active == "Song"){
+        if(selectionState == "Song"){
           return(
             <ProductSongSelector
               key="Song"
@@ -362,7 +371,7 @@ function ProductForm({product, selectedVariant, variants}) {
             />
           )
         }
-        if(productState.active == "Color"){
+        if(selectionState == "Color"){
           return(
             <VariantSelector
               handle={product.handle}
@@ -390,7 +399,11 @@ function ProductForm({product, selectedVariant, variants}) {
         color="primary"
         type="submit"
         fullWidth
-        onClick={() => {}}
+        onClick={() => {
+          sendDataToFirestore(
+            "orders", 
+            {color: color, trackId: songId})
+        }}
       >
         Save Your Design
       </Button>
@@ -399,13 +412,13 @@ function ProductForm({product, selectedVariant, variants}) {
 }
 
 
-function ProductSongSelector({ value, state, onStateChange}) {
+function ProductSongSelector({ value }) {
 
-  const [songId, setSongId] = useState(value);
+  const { songId, changeSongId } = useCustomiseAppContext();
+  
   const [inputValue, setInputValue] = useState('');
   const [open, setOpen] = useState(false);
   
-  const {updateStateValue} = useProduct();
 
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -416,18 +429,9 @@ function ProductSongSelector({ value, state, onStateChange}) {
     // setInputValue(value);
   };
 
-  const handleSubmit = (track) => {
+  const handleSubmit = (value) => {
     console.log("Submit:", value);
-    setSongId(value); 
-    updateStateValue(
-      "Song",
-      {
-        songId: inputValue,
-        name: track.album.name,
-        image: track.album.images[1].url,
-        artists: track.artists
-      }
-    );
+    changeSongId(value); 
     handleClose();
   };
 
@@ -471,45 +475,17 @@ function truncateString(str, num) {
 
 function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
 
-  const { productState, setProductState } = useProduct();
-  
-  const CLIENT_ID = "b2cc0a3604154457ac2d7c216d8e55a1";
-  const CLIENT_SECRET = "38e579a2942f4930af3c4eed0737696a";
-  
+  const { accessToken } = useCustomiseAppContext();
+
   const [inputValue, setInputValue] = useState('');
   const [tracks, setTracks] = useState([]);
-
-  const [accessToken, setAccessToken] = useState(''); 
-
-
-  useEffect(() => {
-    if (!accessToken) {
-      const authParameters = {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `grant_type=client_credentials&client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}`,
-      };
-
-      fetch('https://accounts.spotify.com/api/token', authParameters)
-        .then(result => result.json())
-        .then((data) => {
-          console.log("Got access token", data);
-          setAccessToken(data.access_token);
-          // Assuming you might want to call a prop method to set this if managed outside
-        });
-    }
-  }, [accessToken]);
   
-
   const handleSearch = (event) => {
     if (event.key === 'Enter') {
       
       const searchValue = event.target.value;
       
       console.log("Searching...", searchValue);
-
       const requestOptions = {
         method: 'GET',
         headers: {
@@ -560,7 +536,7 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
               sx={{marginBottom: 2,}}
             >
               <CardActionArea
-                onClick={() => handleSubmit(track)}
+                onClick={() => handleSubmit(track.id)}
                 sx={{ display: 'flex', width: '100%', padding: '0px 1rem' }}
               >
                 <div
@@ -601,9 +577,7 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            handleSubmit()
-          }}
+          onClick={() => handleSubmit(inputValue)}
           color="primary"
           variant="contained"
           fullWidth
@@ -621,8 +595,8 @@ function SongSelectionDialog({ fullScreen, open, handleClose, handleSubmit }) {
  */
 function ProductOptions({option, state, onStateChange}) {
   console.log("Option", option);
-  console.log("State", state, onStateChange);
-  if(option.name == "Color" && productState.type == "Color"){
+  const {selectionState, changeColor } = useCustomiseAppContext();
+  if(option.name == "Color" && selectionState == "Color"){
     return (
       <div className="product-options" key={option.name}>
         {/* <h5>{option.name}</h5> */}
@@ -642,11 +616,17 @@ function ProductOptions({option, state, onStateChange}) {
                   prefetch="intent"
                   preventScrollReset
                   replace
-                  to={`${to}/customise`}
+                  // to={`${to}/customise`}
+                  onClick={() => {
+                    console.log("this color ->", option)
+                    changeColor(value);
+                    console.log("this link ->", `${to}/customise`)
+                  }
+                  }
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    flex: '0.2 0 auto',
+                    flex: '0.5 0 auto',
                     border: isActive ? '2px solid black' : '2px solid #aaa',
                     opacity: isAvailable ? 1 : 0.3,
                     textDecoration: 'none',
@@ -674,7 +654,7 @@ function ProductOptions({option, state, onStateChange}) {
     );
   }
 
-  if(option.name == "Size" && productState.type == "Size"){
+  if(option.name == "Size" && selectionState == "Size"){
     return (
       <div className="product-options" key={option.name}>
         <h5>Select {option.name}</h5>
