@@ -270,6 +270,7 @@ const [selectedTshirt, setSelectedTshirt] = useState(tshirtSamples[0]);
               fov={secondaryCameraPositions[currentIndex].fov}
               width="100%"
               height="100%"
+              controls={false}
             />
             <Box sx={{
               position: 'absolute',

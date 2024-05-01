@@ -1,7 +1,7 @@
 import {Suspense, useState, useEffect, createContext, useContext} from 'react';
 import {defer, redirect} from '@shopify/remix-oxygen';
 import {Await, Link, useLoaderData} from '@remix-run/react';
-import TshirtCanvas from '../components/TshirtCanvas';
+import TshirtCanvas, {SongCylinderCanvas} from '../components/TshirtCanvas';
 import AIShirtCanvas from '../components/AIShirtCanvas';
 
 import ArrowBackwardIcon from '@mui/icons-material/ArrowBackIosNew';
@@ -198,6 +198,7 @@ export default function Product() {
           product={product}
           variants={variants}
         />
+        {/* <SongCylinderCanvas /> */}
       </div>
     </CustomiseProvider>
   );
@@ -213,12 +214,13 @@ function ProductImage({image, variant, handle}) {
     return (
       <div className="threejs-canvas">
         <TshirtCanvas 
-          color={color}
-          camerapos={[5, 5, 5]}
+          camerapos={[0, 10, 3]}
           fov={50}
           height={'70vh'}
+          color={color}
           songId={songId}
           accessToken={accessToken}
+          controls={true}
         />
       </div>
     );

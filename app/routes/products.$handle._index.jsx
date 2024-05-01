@@ -274,6 +274,7 @@ const handlePrevClick = () => {
                       fov={secondaryCameraPositions[currentIndex].fov}
                       width="100%"
                       height={ useMediaQuery(theme.breakpoints.down('sm')) ? "50vh": "90vh"}
+                      controls={false}
                   />
                   <CustomiseButton
                    product={product}
