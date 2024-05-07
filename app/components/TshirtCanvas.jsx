@@ -50,6 +50,19 @@ function PositionedCylinder({ start, end, radius, height, color, radialSegments 
     );
 }
 
+function createThreeJsTextureFromBase64(imageUrl) {
+    const loader = new THREE.TextureLoader();
+    // Load texture directly from base64 URL
+    const texture = loader.load(imageUrl);
+
+    // Optional: Configure texture parameters if necessary
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.minFilter = THREE.LinearFilter;
+
+    return texture;
+}
+
 export function SongCylinderCanvas(color, trackId, accessToken){
 	if (!accessToken) {
         console.error('Invalid Access Token');
@@ -215,7 +228,13 @@ export function Tshirt({color, trackId, accessToken}) {
 	const gltf = useLoader(GLTFLoader, "/models/tshirt-final.glb");
 	console.log("GLTF", gltf);
 	const textureRef = useRef();
-  
+
+	const external_texture = fetch("http://localhost:8001/generateCanvas.php?trackId=sdjfkjsbf")
+					.then((data) => {
+						return createThreeJsTextureFromBase64(data.image);
+					})
+	console.log("external texture", external_texture);
+	
 	const backgroundTexture = useLoader(THREE.TextureLoader, "/models/textures/diffusion-test.png");
 	backgroundTexture.flipY = false;
 

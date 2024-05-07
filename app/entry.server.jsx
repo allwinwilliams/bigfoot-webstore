@@ -35,6 +35,8 @@ export default async function handleRequest(
       'https://i.scdn.co', 
       'data:',
       'https://cdn.shopify.com',
+      'http://localhost:8001*',
+      'http://localhost:8001/generateCanvas.php',
     ],
   });
 
