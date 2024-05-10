@@ -113,7 +113,6 @@ export function SongCylinderCanvas(color, trackId, accessToken){
 	)
 }
 
-
 function createSongTexture(color, trackId, accessToken) {
 	console.log("createSongTexture");
 	console.log(color, trackId);
@@ -124,19 +123,18 @@ function createSongTexture(color, trackId, accessToken) {
 			<p>Invalid Access Token</p>
 		);
     }
-    const songData = fetchSpotifyData(trackId, accessToken).then((data) => {
-		console.log("Song Info", songData);
-		// console.log("Name", songData.name);
-		// console.log("Artists", songData.artists.map(artist => artist.name).join(', '));
-	});
+    // const songData = fetchSpotifyData(trackId, accessToken).then((data) => {
+	// 	console.log("Song Info", songData);
+	// 	// console.log("Name", songData.name);
+	// 	// console.log("Artists", songData.artists.map(artist => artist.name).join(', '));
+	// });
 	
     let canvas = document.getElementById('song-design-canvas');
 	if(!canvas){
 		canvas = document.createElement('canvas')
+		canvas.id = 'song-design-canvas';
 	}
 	
-
-	canvas.id = 'song-design-canvas';
     const ctx = canvas.getContext('2d');
     canvas.width = 4096;
     canvas.height = 4096;
@@ -185,7 +183,12 @@ function createSongTexture(color, trackId, accessToken) {
 }
 
 function createCanvasTexture(color) {
-	const canvas = document.createElement('canvas');
+	let canvas = document.getElementById('plain-canvas');
+	if(!canvas){
+		canvas = document.createElement('canvas')
+		canvas.id = 'plain-canvas';
+		document.body.appendChild(canvas);
+	}
 	const ctx = canvas.getContext('2d');
 	
 	// Set canvas size
@@ -229,12 +232,12 @@ export function Tshirt({color, trackId, accessToken}) {
 	console.log("GLTF", gltf);
 	const textureRef = useRef();
 
-	const external_texture = fetch("http://localhost:8001/generateCanvas.php?trackId=sdjfkjsbf")
-					.then((data) => {
-						return createThreeJsTextureFromBase64(data.image);
-					})
-	console.log("external texture", external_texture);
-	
+	// const external_texture = fetch("http://localhost:8001/generateCanvas.php?trackId=sdjfkjsbf")
+	// 				.then((data) => {
+	// 					return createThreeJsTextureFromBase64(data.image);
+	// 				})
+	// console.log("external texture", external_texture);
+
 	const backgroundTexture = useLoader(THREE.TextureLoader, "/models/textures/diffusion-test.png");
 	backgroundTexture.flipY = false;
 
@@ -272,7 +275,7 @@ export function Tshirt({color, trackId, accessToken}) {
 				const material = new THREE.MeshStandardMaterial({
 					side: THREE.DoubleSide,
 					color: 'white', // Base color of the material
-					map: backgroundTexture, // The diffuse texture map
+					map: canvasTexture, // The diffuse texture map
 					normalMap: normalTexture, // The normal map
 					roughness: 1,
 					metalness: 0.2

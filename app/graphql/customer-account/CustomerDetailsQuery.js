@@ -3,6 +3,7 @@ export const CUSTOMER_FRAGMENT = `#graphql
   fragment Customer on Customer {
     firstName
     lastName
+    id
     defaultAddress {
       ...Address
     }

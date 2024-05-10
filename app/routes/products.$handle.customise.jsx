@@ -9,6 +9,8 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForwardIos';
 import EditIcon from '@mui/icons-material/Edit';
 import {uploadDataWithImage, sendDataToFirestore, uploadCanvasImage} from '../lib/firebaseUtils';
 
+import {CUSTOMER_DETAILS_QUERY} from '~/graphql/customer-account/CustomerDetailsQuery';
+
 import { 
   Button,
   IconButton,
@@ -57,6 +59,9 @@ export const CustomiseProvider = ({ children }) => {
   const [color, setColor] = useState('Black');
   const [songId, setSongId] = useState('');
   const [selectionState, setSelectionState] = useState("Song");
+  const {customer} = useLoaderData();
+  const customerID = customer ? customer.id ? `${customer.id}` : "No customer ID" : "No customer";
+  console.log("customer", customer);
 
   useEffect(() => {
     const CLIENT_ID = "b2cc0a3604154457ac2d7c216d8e55a1";
@@ -86,9 +91,10 @@ export const CustomiseProvider = ({ children }) => {
       color,
       songId,
       selectionState,
+      customerID,
       changeColor,
       changeSongId,
-      changeSelectionState
+      changeSelectionState,
     }}>
       {children}
     </CustomiseAppContext.Provider>
@@ -101,6 +107,14 @@ export const CustomiseProvider = ({ children }) => {
 export async function loader({params, request, context}) {
   const {handle} = params;
   const {storefront} = context;
+
+  const {data, errors} = await context.customerAccount.query(
+    CUSTOMER_DETAILS_QUERY,
+  );
+
+  if (errors?.length || !data?.customer) {
+    throw new Error('Customer not found');
+  }
 
   const selectedOptions = getSelectedProductOptions(request).filter(
     (option) =>
@@ -153,7 +167,11 @@ export async function loader({params, request, context}) {
     variables: {handle},
   });
 
-  return defer({product, variants});
+  return defer({
+    product,
+    variants,
+    customer: data.customer
+  });
 }
 
 /**
@@ -263,6 +281,7 @@ function ProductImage({image, variant, handle}) {
 
 function ProductMain({selectedVariant, product, variants}) {
   const {title, descriptionHtml} = product;
+  
   return (
     <div className="product-main">
       {/* <h4>Customise: {title}</h4> */}
@@ -304,8 +323,8 @@ function ProductMain({selectedVariant, product, variants}) {
  * }}
  */
 function ProductForm({product, selectedVariant, variants}) {
-
-  const { color, songId, selectionState, changeSelectionState } = useCustomiseAppContext(); 
+  
+  const { color, songId, customerID, selectionState, changeSelectionState } = useCustomiseAppContext(); 
   console.log("Product options", product);
   
   return (
@@ -402,10 +421,14 @@ function ProductForm({product, selectedVariant, variants}) {
         type="submit"
         fullWidth
         onClick={() => {
-          let designCanvas = document.getElementById('song-design-canvas');
-          uploadDataWithImage(designCanvas, 'orders', {
-            color: color, trackId: songId 
-          }).then(result => console.log('Data and image uploaded successfully:', result))
+          let designCanvas = document.getElementById('plain-canvas');
+          uploadDataWithImage(
+            designCanvas, 
+            'orders', 
+            {
+              color: color, trackId: songId, customer: customerID
+            }
+            ).then(result => console.log('Data and image uploaded successfully:', result))
             .catch(error => console.error('Error uploading data and image:', error));
           }}
 

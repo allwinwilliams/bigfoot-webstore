@@ -29,6 +29,7 @@ export default async function handleRequest(
         'https://firestore.googleapis.com:*',
         'https://firebasestorage.googleapis.com/',
         'https://firebasestorage.googleapis.com:*',
+        'wss://genuine-firefly-probable.ngrok-free.app:*',
     ],
     imgSrc: [
       "'self'",
